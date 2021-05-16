@@ -9,6 +9,15 @@
 
 #include "Tuple.h"
 
+/*
+ * 1. https://stackoverflow.com/questions/5609915/best-practice-for-passing-primitive-data-type-in-c-function
+ * 2. https://stackoverflow.com/questions/523872/how-do-you-serialize-an-object-in-c
+ * 3. https://stackoverflow.com/questions/11415850/c-how-to-serialize-deserialize-objects-without-the-use-of-libraries?rq=1
+ * 4. https://stackoverflow.com/questions/1703322/serialize-strings-ints-and-floats-to-character-arrays-for-networking-without-li
+ * 5. https://stackoverflow.com/questions/8513202/c-how-to-send-structures-over-socket
+ *
+ * */
+
 TupleElement::TupleElement(variant val){
     this->value = val;
     switch(val.index()){
@@ -38,7 +47,7 @@ char* TupleElement::serialize(){
     std::stringstream buffer;
     ElemType type = this->valueType;
     buffer << type << separator;
-    buffer << this->valueSize << separator; // TODO: to niepotrzebne jak inty i floaty
+    buffer << this->valueSize << separator; // TODO: rozmiar niepotrzebny jak inty i floaty, to potem mozemy optymalizowac
     if( type == INT)
         buffer << std::get<int>(this->value);
     else if( type == FLOAT)
