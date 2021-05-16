@@ -8,13 +8,13 @@
 #include <cstring>
 
 int main() {
-//    TupleElement t = TupleElement(257);
-//    TupleElement t = TupleElement("japierdolekurwaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    TupleElement t = TupleElement(0.0f);
+    TupleElement t = TupleElement(257);
+//    TupleElement t = TupleElement("napis");
+//    TupleElement t = TupleElement(12.1f);
 
-    char* serialized = t.serialize();
+    std::string serialized = t.serialize();
 //    puts(serialized);
-    TupleElement::deserialize(serialized);
+    TupleElement::deserialize(serialized.c_str());
 //    int num = 10;
 //    char* arr;
 //    memcpy(arr, &num, sizeof(num));

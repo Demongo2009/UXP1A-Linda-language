@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <sstream>
 
 #include "Tuple.h"
 
@@ -16,14 +17,14 @@
 
 TupleElement::TupleElement(variant val){
     this->value = val;
-    switch(val.index()+1){
+    switch(val.index()){
         case INT:
             this->valueType = INT;
-            this->valueSize = 4;//TODO: to do zmiany
+            this->valueSize = sizeof(int); // tu mozna dac jakis int32
             break;
         case FLOAT:
             this->valueType = FLOAT;
-            this->valueSize = 4;//TODO: to do zmiany
+            this->valueSize = sizeof(float); // tu tez jakis float32?
             break;
         case STRING:
             this->valueType = STRING;
@@ -42,85 +43,62 @@ ElemType TupleElement::getType(){
     return this->valueType;
 }
 
-int TupleElement::getSize(){
+size_t TupleElement::getSize(){
     return this->valueSize;
 }
 
-char* TupleElement::serialize(){
-    char serializedType[sizeof(ElemType)];
-    char serializedSize[sizeof(int)];
-    char serializedValue[this->valueSize+1];
+std::string TupleElement::serialize(){
+    std::stringstream buffer;
 
-//TODO: tutaj trzeba zmienic bo kopiuje tylko ten jeden zajęty bajt, a chcemy zeby brało 4 chyba
-    memcpy(serializedType, &(this->valueType), sizeof(serializedType));
-    memcpy(serializedSize, &(this->valueSize), sizeof(serializedSize));
+//    buffer.write(reinterpret_cast<char*>(&this->valueType), sizeof(this->valueType));
+//    buffer.write(reinterpret_cast<char*>(&this->valueSize), sizeof(this->valueSize));
+//    buffer.write(reinterpret_cast<char*>(&this->value), valueSize);
+    buffer <<std::to_string( this->valueType)<<";" << std::to_string(this->valueSize) <<";"<< std::to_string(1);
+    return buffer.str();
+
+//    size_t serialized_size = sizeof(this->valueSize) + sizeof(this->valueType) + valueSize;
+//    std::cout<<sizeof(this->valueSize)<<std::endl;
+//    char* bytes = new char[serialized_size]; //pamiętać o delete
+//    buffer.get(bytes, serialized_size);
+//    std::cout<<bytes<<std::endl;
+//    return bytes;
 
 
-    ElemType type = *(ElemType*)serializedType;
-    int size = *(int*)serializedSize;
-    std::cout<<"typ po odczytaniu: "<<type<<std::endl;
-    std::cout<<"rozmiar po odczytaniu: "<<size<<std::endl;
+//    std::stringstream buffer2(bytes);
+    ElemType type;
+    size_t size;
 
+//    int value1;
+    std::string value1;
+//    float value1;
 
-    if(valueType == INT){
-        memcpy(serializedValue, &std::get<int>(this->value), valueSize);
-    }else if(type == FLOAT) {
-//        memcpy(serializedValue, &std::get<float>(this->value), valueSize);
-        snprintf(serializedValue, sizeof(serializedValue), "%f", std::get<float>(this->value));
-    }else if(type == STRING){
-        memcpy(serializedValue, std::get<std::string>(this->value).c_str(), valueSize);
-    }
-    size_t resultSize = sizeof(serializedType) + sizeof(serializedValue) + sizeof(serializedSize);
-//    char* result = new char[resultSize];
-    char* result = new char();
-//TODO: trzeba jakos zrobić żeby zawsze zapisywało 4 bajty ORAZ żeby potem dobrze je odczytywało.
-//TODO:To musi być kurwa proste ale mi nie wychodzi
-    strncat(result, serializedType, sizeof(ElemType));
-    strncat(result+4, serializedSize, sizeof(int));
-    strncat(result+8, serializedValue, valueSize);
-//    strcpy(result, serializedType);
-//    strcat(result, serializedSize);
-//    strcat(result, serializedValue);
-
-    puts(result);
-    puts(result+4);
-    puts(result+8);
-
-    return result;
+    buffer.read(reinterpret_cast<char*>(&type), sizeof(ElemType));
+    buffer.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+    buffer.read(reinterpret_cast<char*>(&value1), size);
+    std::cout<<"typ: "<<type<<"\nrozmiar: "<<size<<"\nwartosc: "<<value1<<std::endl;
+    std::cout<<"dupa"<<std::endl;
 }
 
-TupleElement TupleElement::deserialize(char *serialized) {
-    std::cout<<"---------------------------------"<<std::endl;
-    int length = strlen(serialized);
+TupleElement TupleElement::deserialize(const char *serialized) {
+    std::string type;
+    std::string size;
 
-    char typeChunk[sizeof(ElemType)];
-    char sizeChunk[sizeof(int)];
+    std::string value1;
+//    std::string value1;
+//    float value1;
 
-    memcpy(typeChunk, serialized, 4);
-    memcpy(sizeChunk, serialized+4, 4);
 
-    //TODO: nie wiem co sie dzieje, ale jak string jest dłuższy niż 256 to mimo ze czytam jeden byte to i tak pokazuje dobrą
+    std::stringstream buffer(serialized);
+//    buffer.read(reinterpret_cast<char*>(&type), sizeof(ElemType));
+//    buffer.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+//    buffer.read(reinterpret_cast<char*>(&value1), size);
+//    std::string typeStr;
+    buffer >> value1;
+    buffer >>size;
+    buffer >> type;
 
-    ElemType type = *(ElemType*)typeChunk;
-    int size = *(int*)sizeChunk;
-    std::cout<<"otrzymany type: "<<type<<std::endl;
-    std::cout<<"otrzymany size: "<<size<<std::endl;
 
-    char valueChunk[size];
-//    int offset = ceil(size/256.0);//TODO: wiem ze tak nie moze byc ale XDD dziala
-//    std::cout<<"offset: "<<offset<<std::endl;
-    memcpy(valueChunk, serialized+8, size);
-    if(type == INT){
-        int value = *(int*)valueChunk;
-        std::cout<<"otrzymano int: "<<value<<std::endl;
-    }else if(type == FLOAT){
-        float value = *(float*)valueChunk;
-        std::cout<<"otrzymano float: "<<value<<std::endl;
-    }else if(type == STRING){
-        std::string value(valueChunk);
-        std::cout<<"otrzymano string: "<<value<<std::endl;
-    }
-
-    delete [] serialized;
+//    type = *(ElemType*)typeStr;
+    std::cout<<"typ: "<<type<<"\nrozmiar: "<<size<<"\nwartosc: "<<value1<<std::endl;
 
 }
