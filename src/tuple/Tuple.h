@@ -7,6 +7,7 @@
 
 #include <variant>
 #include <string>
+#include <vector>
 
 static const int MAX_NO_OF_ELEMENTS = 5;
 static const int MAX_SIZE_IN_BYTES = 512;
@@ -18,12 +19,22 @@ class TupleElement{
 public:
     explicit TupleElement(variant);
 
-    variant getValue(){return value;};
-    ElemType getType(){return valueType;};
-    size_t getSize()  {return valueSize;};
+    [[nodiscard]] variant getValue() const {return value;};
+    [[nodiscard]] ElemType getType() const {return valueType;};
+    [[nodiscard]] size_t getSize() const   {return valueSize;};
 
-    char* serialize();
-    static TupleElement deserialize(const char*);
+    std::string serialize();
+    static TupleElement deserialize(std::string&);
+
+    //for debug
+    void print(){
+        if(valueType == INT)
+            std::cout<<std::get<int>(value);
+        else if(valueType == FLOAT)
+            std::cout<<std::get<float>(value);
+        else if(valueType == STRING)
+            std::cout<<std::get<std::string>(value);
+    }
 
 private:
     variant value;
@@ -33,18 +44,28 @@ private:
 
 class Tuple {
 public:
-    Tuple(int noOfElements, ...);
+    explicit Tuple(std::vector<variant>);
 
-    TupleElement getElement(int index) {return elements[index];}; //TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
-    variant getElementsValue(int index){return elements[index].getValue();};
-    ElemType getElementsType(int index){return elements[index].getType();};
+    [[nodiscard]] TupleElement getElement(int index)  const {return elements[index];}; //TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
+    [[nodiscard]] variant getElementsValue(int index) const{return elements[index].getValue();};
+    [[nodiscard]] ElemType getElementsType(int index) const{return elements[index].getType();};
 
     char* serialize();
     static Tuple deserialize(char*);
 
+    //for debug
+    void print(){
+        std::cout<<"krotka "<<noOfElements<<". elementowa:\n";
+        for (int i = 0; i < noOfElements; ++i) {
+            std::cout<<"\t"<<i<<": ";
+            elements[i].print();
+            std::cout<<std::endl;
+        }
+    }
+
 private:
-    const int noOfElements;
-    TupleElement elements[MAX_NO_OF_ELEMENTS];
+    int noOfElements;
+    std::vector<TupleElement> elements;
 };
 
 #endif //UXP1A_LINDA_TUPLE_H

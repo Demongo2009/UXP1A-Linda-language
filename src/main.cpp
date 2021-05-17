@@ -2,14 +2,11 @@
 #include "tuple/Tuple.h"
 
 int main() {
-//    TupleElement t = TupleElement(257);
-//    TupleElement t = TupleElement(12.1f);
-    TupleElement t = TupleElement("napis");
 
+    Tuple tuple = Tuple({-11, 0.95f, "naaaapis"});
+    char* serializedTuple = tuple.serialize();
+    Tuple tuple2 = Tuple::deserialize(serializedTuple);
+    tuple2.print();
 
-    char* serialized = t.serialize();
-    TupleElement::deserialize(serialized);
-
-//    t.serialize();
     return 0;
 }

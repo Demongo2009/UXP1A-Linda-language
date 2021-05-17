@@ -16,7 +16,10 @@
  * 4. https://stackoverflow.com/questions/1703322/serialize-strings-ints-and-floats-to-character-arrays-for-networking-without-li
  * 5. https://stackoverflow.com/questions/8513202/c-how-to-send-structures-over-socket
  *
+ * https://isocpp.org/wiki/faq/serialization#serialize-binary-format
  * */
+
+const char separator = ';';
 
 TupleElement::TupleElement(variant val){
     this->value = val;
@@ -38,16 +41,16 @@ TupleElement::TupleElement(variant val){
     }
 }
 
-char* TupleElement::serialize(){
+std::string TupleElement::serialize(){
 //    std::stringstream buffer;
 //    buffer.write(reinterpret_cast<char*>(&this->valueType), sizeof(this->valueType));
 //    buffer.write(reinterpret_cast<char*>(&this->valueSize), sizeof(this->valueSize));
 //    buffer.write(reinterpret_cast<char*>(&this->value), valueSize);
-    char separator = ';';
+
     std::stringstream buffer;
     ElemType type = this->valueType;
     buffer << type << separator;
-    buffer << this->valueSize << separator; // TODO: rozmiar niepotrzebny jak inty i floaty, to potem mozemy optymalizowac
+//    buffer << this->valueSize << separator; // TODO: rozmiar niepotrzebny jak inty i floaty, to potem mozemy optymalizowac
     if( type == INT)
         buffer << std::get<int>(this->value);
     else if( type == FLOAT)
@@ -57,38 +60,83 @@ char* TupleElement::serialize(){
     else
         throw;
     buffer << separator;
-//    return buffer.str();
+    return buffer.str();
 
 
-    size_t serialized_size = sizeof(this->valueSize) + sizeof(this->valueType) + valueSize; //TODO: tu te ograniczenie na 512bajtów
-    char* bytes = new char[serialized_size]; //TODO: delete
-    strcpy(bytes, buffer.str().c_str());
-    return bytes;
+//    size_t serialized_size = sizeof(this->valueSize) + sizeof(this->valueType) + valueSize; //TODO: tu te ograniczenie na 512bajtów
+//    char* bytes = new char[serialized_size];
+//    strcpy(bytes, buffer.str().c_str());
+//    return bytes;
 }
 
-TupleElement TupleElement::deserialize(const char *serialized) {
+TupleElement TupleElement::deserialize(std::string& content) {
 //    std::stringstream buffer(serialized);
 //    buffer.read(reinterpret_cast<char*>(&type), sizeof(ElemType));
 //    buffer.read(reinterpret_cast<char*>(&size), sizeof(size_t));
 //    buffer.read(reinterpret_cast<char*>(&value1), size);
 
-    std::stringstream buffer(serialized);
-    std::string content;
-    buffer >> content;
+    std::string utilStr = content.substr(0, content.find(separator));
+    ElemType type = (ElemType)std::stoi(utilStr);
+    content.erase(0, content.find(separator) +1);
 
-    std::cout<<"otrzymana zawartosc: "<<content<<std::endl;
-    delete [] serialized;
+    utilStr = content.substr(0, content.find(separator));
+    content.erase(0, content.find(separator) +1);
+    if(type == INT){
+        int value = std::stoi(utilStr);
+        return TupleElement(value);
+    }else if(type == FLOAT){
+        float value = std::stof(utilStr);
+        return TupleElement(value);
+    }else if(type == STRING) {
+        return TupleElement(utilStr);
+    }else{
+        throw;
+    }
 }
 
-//Tuple::Tuple(int noOfElements, ...) {
-//    if(noOfElements < 0 || noOfElements > 5)
-//        throw;
-//
-//    va_list ap;
-//    va_start(ap, noOfElements);
-//    for(int i=0; i<noOfElements; ++i){
-//        variant arg = va_arg(ap, variant); //TODO: chyba nie da się zrobić generycznego konstruktora z wariantem
-//        elements[i] = TupleElement(arg);
-//    }
-//    va_end(ap);
-//}
+char * Tuple::serialize() {
+    char* tuplesBytes = nullptr;
+    std::string serialized = std::to_string(this->noOfElements) + separator;
+    std::string serializedTuples;
+    for(int i = 0; i<this->noOfElements; ++i) {
+        serializedTuples += this->elements[i].serialize();
+    }
+
+
+    serialized += serializedTuples;
+    if( serialized.size() > MAX_SIZE_IN_BYTES){ //nie wiem essa
+        throw;
+    }
+    char* bytes = new char[serialized.size()];
+    strcpy(bytes, serialized.c_str());
+    return bytes;
+}
+
+Tuple Tuple::deserialize(char* serialized) {
+    std::string str(serialized);
+    delete[] serialized;
+
+    std::string utilStr = str.substr(0, str.find(separator));
+    int noOfElements = std::stoi(utilStr);
+    str.erase(0, str.find(separator) +1);
+
+    std::vector<variant> valuesVector;
+    while(str != ""){
+        TupleElement t2 = TupleElement::deserialize(str);
+        valuesVector.emplace_back(t2.getValue());
+    }
+    return Tuple(valuesVector);
+}
+
+Tuple::Tuple(std::vector<variant> vector){
+    int size = vector.size();
+    if(size <= 0 || size > MAX_NO_OF_ELEMENTS){
+        throw;//w zasadzie to nie ma sensu dawanie tego statycznego ograniczenia
+    }
+
+    for(int i = 0; i<size; ++i){
+        this->elements.emplace_back(TupleElement(vector[i]));
+    }
+    this->noOfElements = size;
+
+}
