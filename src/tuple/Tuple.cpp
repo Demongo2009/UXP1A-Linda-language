@@ -37,7 +37,7 @@ TupleElement::TupleElement(variant val) {
             this->valueSize = std::get<std::string>(val).size();
             break;
         default:
-            throw("TupleElement constructor");
+            throw std::runtime_error("niepoprawny rodzaj wartosci");
     }
 }
 
@@ -58,15 +58,9 @@ std::string TupleElement::serialize() {
     else if (type == STRING)
         buffer << std::get<std::string>(this->value);
     else
-        throw;
+        throw std::runtime_error("niepoprawny rodzaj wartosci w serialziacji elementu");
     buffer << separator;
     return buffer.str();
-
-
-    //    size_t serialized_size = sizeof(this->valueSize) + sizeof(this->valueType) + valueSize; //TODO: tu te ograniczenie na 512bajtów
-    //    char* bytes = new char[serialized_size];
-    //    strcpy(bytes, buffer.str().c_str());
-    //    return bytes;
 }
 
 TupleElement TupleElement::deserialize(std::string &content) {
@@ -90,7 +84,7 @@ TupleElement TupleElement::deserialize(std::string &content) {
     } else if (type == STRING) {
         return TupleElement(utilStr);
     } else {
-        throw;
+        throw std::runtime_error("niepoprawny rodzaj wartosci w deserialziacji elementu");
     }
 }
 
@@ -105,7 +99,7 @@ char *Tuple::serialize() {
 
     serialized += serializedTuples;
     if (serialized.size() > MAX_SIZE_IN_BYTES) {//nie wiem essa
-        throw;
+        throw std::runtime_error("za duzo rozmiar krotki w bajtach");
     }
     char *bytes = new char[serialized.size()];
     strcpy(bytes, serialized.c_str());
@@ -131,7 +125,7 @@ Tuple Tuple::deserialize(char *serialized) {
 Tuple::Tuple(std::vector<variant> vector) {
     int size = vector.size();
     if (size <= 0 || size > MAX_NO_OF_ELEMENTS) {
-        throw;//w zasadzie to nie ma sensu dawanie tego statycznego ograniczenia
+        throw std::runtime_error("za duzo elementow w krotce");//w zasadzie to nie ma sensu dawanie tego statycznego ograniczenia
     }
 
     for (int i = 0; i < size; ++i) {

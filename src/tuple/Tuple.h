@@ -8,6 +8,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <iostream>
 
 static const int MAX_NO_OF_ELEMENTS = 5;
 static const int MAX_SIZE_IN_BYTES = 512;
