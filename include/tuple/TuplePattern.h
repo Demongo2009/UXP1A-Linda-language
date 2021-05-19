@@ -9,6 +9,8 @@
 
 class TupleElementPattern {
 public:
+    TupleElementPattern(const char*);
+
     bool checkIfMatch(TupleElement);
     char *serialize();
     static TupleElementPattern deserialize(char *);
@@ -21,6 +23,8 @@ private:
 
 class TuplePattern {
 public:
+    TuplePattern(const char*);
+
     bool checkIfMatch(Tuple);
     char *serialize();
     static TuplePattern deserialize(char *);

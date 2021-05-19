@@ -5,11 +5,10 @@
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 
-#include "../consts.h"
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include "../consts.h"
 
 class TupleElement {
 public:

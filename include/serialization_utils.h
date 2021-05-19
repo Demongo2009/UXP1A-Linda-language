@@ -4,8 +4,9 @@
 
 #ifndef UXP1A_LINDA_SERIALIZATION_UTILS_H
 #define UXP1A_LINDA_SERIALIZATION_UTILS_H
+
 #include "consts.h"
-#include <string>
+
 std::string getNextElementAndErase(std::string&, char separator = Separator);
 
 #endif//UXP1A_LINDA_SERIALIZATION_UTILS_H
