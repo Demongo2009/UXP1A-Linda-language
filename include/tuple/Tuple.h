@@ -5,21 +5,15 @@
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 
+#include "../consts.h"
 #include <iostream>
 #include <string>
-#include <variant>
 #include <vector>
 
 
-
-enum ElemType { INT,
-                FLOAT,
-                STRING };
-typedef std::variant<int, float, std::string> variant;
-
 class TupleElement {
 public:
-    explicit TupleElement(variant);
+    explicit TupleElement(const variant&);
 
     [[nodiscard]] variant getValue() const { return value; };
     [[nodiscard]] ElemType getType() const { return valueType; };

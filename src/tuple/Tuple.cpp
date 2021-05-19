@@ -5,11 +5,10 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
-#include "Tuple.h"
-#include "../serialization_utils.h"
-#include "../consts.h"
+#include "../../include/serialization_utils.h"
+#include "../../include/tuple/Tuple.h"
+
 /*
  * 1. https://stackoverflow.com/questions/5609915/best-practice-for-passing-primitive-data-type-in-c-function
  * 2. https://stackoverflow.com/questions/523872/how-do-you-serialize-an-object-in-c
@@ -22,7 +21,7 @@
 
 
 
-TupleElement::TupleElement(variant val) {
+TupleElement::TupleElement(const variant& val) {
     this->value = val;
     switch (val.index()) {
         case INT:
@@ -42,7 +41,7 @@ TupleElement::TupleElement(variant val) {
 std::string TupleElement::serialize() {
     std::stringstream buffer;
     ElemType type = this->valueType;
-    buffer << type << separator;
+    buffer << type << Separator;
     if (type == INT)
         buffer << std::get<int>(this->value);
     else if (type == FLOAT)
@@ -51,7 +50,7 @@ std::string TupleElement::serialize() {
         buffer << std::get<std::string>(this->value);
     else
         throw std::runtime_error("niepoprawny rodzaj wartosci w serialziacji elementu");
-    buffer << separator;
+    buffer << Separator;
     return buffer.str();
 }
 
