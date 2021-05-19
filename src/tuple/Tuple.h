@@ -5,13 +5,12 @@
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 
+#include <iostream>
 #include <string>
 #include <variant>
 #include <vector>
-#include <iostream>
 
-static const int MAX_NO_OF_ELEMENTS = 5;
-static const int MAX_SIZE_IN_BYTES = 512;
+
 
 enum ElemType { INT,
                 FLOAT,
@@ -24,7 +23,6 @@ public:
 
     [[nodiscard]] variant getValue() const { return value; };
     [[nodiscard]] ElemType getType() const { return valueType; };
-    [[nodiscard]] size_t getSize() const { return valueSize; };
 
     std::string serialize();
     static TupleElement deserialize(std::string &);
@@ -41,7 +39,6 @@ public:
 
 private:
     variant value;
-    size_t valueSize;
     ElemType valueType;
 };
 
@@ -49,15 +46,18 @@ class Tuple {
 public:
     explicit Tuple(std::vector<variant>);
 
-    [[nodiscard]] TupleElement getElement(int index) const { return elements[index]; };//TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
+    //TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
+    [[nodiscard]] TupleElement getElement(int index) const { return elements[index]; };
     [[nodiscard]] variant getElementsValue(int index) const { return elements[index].getValue(); };
     [[nodiscard]] ElemType getElementsType(int index) const { return elements[index].getType(); };
+    [[nodiscard]] int getNumberOfElements() const { return elements.size(); };
 
     char *serialize();
     static Tuple deserialize(char *);
 
     //for debug
     void print() {
+        int noOfElements = elements.size();
         std::cout << "krotka " << noOfElements << ". elementowa:\n";
         for (int i = 0; i < noOfElements; ++i) {
             std::cout << "\t" << i << ": ";
@@ -67,7 +67,6 @@ public:
     }
 
 private:
-    int noOfElements;
     std::vector<TupleElement> elements;
 };
 
