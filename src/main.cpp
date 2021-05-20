@@ -1,4 +1,5 @@
 #include "../include/tuple/Tuple.h"
+#include "../include/tuple/TuplePattern.h"
 #include <iostream>
 
 int main() {
@@ -8,5 +9,7 @@ int main() {
     Tuple tuple2 = Tuple::deserialize(serializedTuple);
     tuple2.print();
 
+    TuplePattern pattern = TuplePattern("string:*, integer:==1");
+    pattern.print();
     return 0;
 }

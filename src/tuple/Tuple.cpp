@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "../../include/serialization_utils.h"
+#include "../../include/SerializationUtils.h"
 #include "../../include/tuple/Tuple.h"
 
 /*
@@ -55,10 +55,10 @@ std::string TupleElement::serialize() {
 }
 
 TupleElement TupleElement::deserialize(std::string &content) {
-    std::string utilStr = getNextElementAndErase(content);
+    std::string utilStr = SerializationUtils::getNextElementAndErase(content);
     auto type = (ElemType) std::stoi(utilStr);
 
-    utilStr = getNextElementAndErase(content);
+    utilStr = SerializationUtils::getNextElementAndErase(content);
     if (type == INT) {
         int value = std::stoi(utilStr);
         return TupleElement(value);

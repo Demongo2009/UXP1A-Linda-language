@@ -5,14 +5,14 @@
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 
+#include "../consts.h"
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../consts.h"
 
 class TupleElement {
 public:
-    explicit TupleElement(const variant&);
+    explicit TupleElement(const variant &);
 
     [[nodiscard]] variant getValue() const { return value; };
     [[nodiscard]] ElemType getType() const { return valueType; };
@@ -51,7 +51,7 @@ public:
     //for debug
     void print() {
         int noOfElements = elements.size();
-        std::cout << "krotka " << noOfElements << ". elementowa:\n";
+        std::cout << "krotka " << noOfElements << " elementowa:\n";
         for (int i = 0; i < noOfElements; ++i) {
             std::cout << "\t" << i << ": ";
             elements[i].print();
