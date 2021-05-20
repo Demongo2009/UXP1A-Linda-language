@@ -4,12 +4,32 @@
 
 #include "../../include/tuple/TuplePattern.h"
 #include "../../include/SerializationUtils.h"
+#include <cstring>
+#include <sstream>
 
 bool TupleElementPattern::checkIfMatch(TupleElement) {
     return false;
 }
-char *TupleElementPattern::serialize() {
-    return nullptr;
+
+std::string TupleElementPattern::serialize() {
+    std::stringstream buffer;
+    ElemType type = this->valueType;
+    buffer << type << Separator;
+    buffer << this->matchOperatorType << Separator;
+    if (this->matchOperatorType == WHATEVER) {
+        return buffer.str();//do not serialize value
+    }
+
+    if (type == INT)
+        buffer << std::get<int>(this->valueToCompare);
+    else if (type == FLOAT)
+        buffer << std::get<float>(this->valueToCompare);
+    else if (type == STRING)
+        buffer << std::get<std::string>(this->valueToCompare);
+    else
+        throw std::runtime_error("niepoprawny rodzaj wartosci w serialziacji elementu");
+    buffer << Separator;
+    return buffer.str();
 }
 TupleElementPattern TupleElementPattern::deserialize(std::string content) {
     return TupleElementPattern("");
@@ -31,7 +51,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
 
     if (operatorStr == "*") {
         this->matchOperatorType = WHATEVER;
-        this->valueToCompare = ""; //in order to not throw exception while printing
+        this->valueToCompare = "";//in order to not throw exception while printing
     } else {
         if (SerializationUtils::doubleChars.count(operatorStr) != 0) {
             this->matchOperatorType = SerializationUtils::doubleChars[operatorStr];
@@ -61,7 +81,17 @@ bool TuplePattern::checkIfMatch(Tuple) {
 }
 
 char *TuplePattern::serialize() {
-    return nullptr;
+    std::string serialized;
+    for (auto &pattern : this->elementPatterns) {
+        serialized += pattern.serialize();
+    }
+
+    if (serialized.size() > MAX_SIZE_IN_BYTES) {//TODO: zostawiamy to?
+        throw std::runtime_error("za duzo rozmiar krotki w bajtach");
+    }
+    char *bytes = new char[serialized.size()];
+    strcpy(bytes, serialized.c_str());
+    return bytes;
 }
 
 TuplePattern TuplePattern::deserialize(char *) {
@@ -69,19 +99,9 @@ TuplePattern TuplePattern::deserialize(char *) {
 }
 
 TuplePattern::TuplePattern(std::string patternString) {
-    /*
-     * przyklad poprawnego - "int:==4, string:>acdfg, float:*"
-     *
-     * czyli na jeden element sklada sie:
-     *  1. typ
-     *  2. dwukropek
-     *  3. operator porownania
-     *  4. wartość, jezeli nie '*' w 3.
-     *
-     */
     while (!patternString.empty()) {
         std::string elementPatternStr = SerializationUtils::getNextElementAndErase(patternString, ',');
-        while(elementPatternStr[0] == ' '){ //get rid of spaces after coma
+        while (elementPatternStr[0] == ' ') {//get rid of spaces after coma
             elementPatternStr.erase(0, 1);
         }
         this->elementPatterns.emplace_back(TupleElementPattern(elementPatternStr));

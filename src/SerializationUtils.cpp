@@ -8,13 +8,14 @@
 
 std::string SerializationUtils::getNextElementAndErase(std::string &str, char separator) {
     auto idx = str.find(separator);
-    if (idx == std::string::npos) {
+    if (idx == std::string::npos) {//if there is no separator, then return whole string
         idx = str.size();
     }
     std::string contentStr = str.substr(0, idx);
     str.erase(0, idx + 1);
     return std::move(contentStr);
 }
+
 stringToOperator SerializationUtils::doubleChars = {
         {"==", EQUAL},
         {">=", GREATER_EQUAL},

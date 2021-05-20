@@ -12,7 +12,7 @@ public:
     TupleElementPattern(std::string);
 
     bool checkIfMatch(TupleElement);
-    char *serialize();
+    std::string serialize();
     static TupleElementPattern deserialize(std::string);
 
     //for debug

@@ -9,7 +9,10 @@ int main() {
     Tuple tuple2 = Tuple::deserialize(serializedTuple);
     tuple2.print();
 
-    TuplePattern pattern = TuplePattern("string:*, integer:==1");
-    pattern.print();
+    TuplePattern tuplePattern = TuplePattern("string:*, integer:==1, float:<0.95");
+    char *serializedTuplePattern = tuplePattern.serialize();
+    std::cout << serializedTuplePattern << std::endl;
+
+    tuplePattern.print();
     return 0;
 }
