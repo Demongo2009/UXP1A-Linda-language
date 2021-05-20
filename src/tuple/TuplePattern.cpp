@@ -31,8 +31,28 @@ std::string TupleElementPattern::serialize() {
     buffer << Separator;
     return buffer.str();
 }
-TupleElementPattern TupleElementPattern::deserialize(std::string content) {
-    return TupleElementPattern("");
+TupleElementPattern TupleElementPattern::deserialize(std::string &content) {
+    std::string utilStr = SerializationUtils::getNextElementAndErase(content);
+    auto type = (ElemType) std::stoi(utilStr);
+    utilStr = SerializationUtils::getNextElementAndErase(content);
+    auto matchOperator = (MatchOperatorType) std::stoi(utilStr);
+
+    if(matchOperator == WHATEVER){
+        return TupleElementPattern(type, matchOperator, "");
+    }
+
+    utilStr = SerializationUtils::getNextElementAndErase(content);
+    if (type == INT) {
+        int value = std::stoi(utilStr);
+        return TupleElementPattern(type, matchOperator, value);
+    } else if (type == FLOAT) {
+        float value = std::stof(utilStr);
+        return TupleElementPattern(type, matchOperator, value);
+    } else if (type == STRING) {
+        return TupleElementPattern(type, matchOperator, utilStr);
+    } else {
+        throw std::runtime_error("niepoprawny rodzaj wartosci w deserialziacji elementu");
+    }
 }
 
 TupleElementPattern::TupleElementPattern(std::string patternElementString) {
@@ -75,7 +95,6 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
     }
 }
 
-
 bool TuplePattern::checkIfMatch(Tuple) {
     return false;
 }
@@ -94,8 +113,16 @@ char *TuplePattern::serialize() {
     return bytes;
 }
 
-TuplePattern TuplePattern::deserialize(char *) {
-    return TuplePattern("");
+TuplePattern TuplePattern::deserialize(char *serialized) {
+    std::string str(serialized);
+    delete[] serialized;
+
+    std::vector<TupleElementPattern> elementPatterns;
+    while (!str.empty()) {
+        TupleElementPattern t2 = TupleElementPattern::deserialize(str);
+        elementPatterns.emplace_back(t2);
+    }
+    return TuplePattern(std::move(elementPatterns));
 }
 
 TuplePattern::TuplePattern(std::string patternString) {

@@ -11,8 +11,8 @@ int main() {
 
     TuplePattern tuplePattern = TuplePattern("string:*, integer:==1, float:<0.95");
     char *serializedTuplePattern = tuplePattern.serialize();
-    std::cout << serializedTuplePattern << std::endl;
+    TuplePattern tuplePattern2 = TuplePattern::deserialize(serializedTuplePattern);
+    tuplePattern2.print();
 
-    tuplePattern.print();
     return 0;
 }

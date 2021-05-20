@@ -13,11 +13,11 @@ public:
 
     bool checkIfMatch(TupleElement);
     std::string serialize();
-    static TupleElementPattern deserialize(std::string);
+    static TupleElementPattern deserialize(std::string&);
 
     //for debug
-    void print(){
-        std::cout<<"typ:"<< valueType <<" operator:"<<matchOperatorType<<" wartosc:";
+    void print() {
+        std::cout << "typ:" << valueType << " operator:" << matchOperatorType << " wartosc:";
         if (valueType == INT)
             std::cout << std::get<int>(valueToCompare);
         else if (valueType == FLOAT)
@@ -30,6 +30,11 @@ private:
     ElemType valueType;
     MatchOperatorType matchOperatorType;
     variant valueToCompare;
+
+    TupleElementPattern(ElemType ty, MatchOperatorType op, variant val)
+        : valueType(ty),
+          matchOperatorType(op),
+          valueToCompare(val){};
 };
 
 class TuplePattern {
@@ -40,7 +45,7 @@ public:
     char *serialize();
     static TuplePattern deserialize(char *);
 
-    void print(){
+    void print() {
         int noOfElements = elementPatterns.size();
         std::cout << "wzorzec " << noOfElements << " elementowy:\n";
         for (int i = 0; i < noOfElements; ++i) {
@@ -52,6 +57,7 @@ public:
 
 private:
     std::vector<TupleElementPattern> elementPatterns;
+    TuplePattern(std::vector<TupleElementPattern> vec) : elementPatterns(std::move(vec)){};//for deserialization
 };
 
 
