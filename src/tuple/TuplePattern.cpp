@@ -3,17 +3,17 @@
 //
 
 #include "../../include/tuple/TuplePattern.h"
-#include "../../include/SerializationUtils.h"
 #include <cstring>
 #include <sstream>
 
 bool TupleElementPattern::checkIfMatch(TupleElement) {
+    //TODO: DO ZROBIENIA
     return false;
 }
 
 std::string TupleElementPattern::serialize() {
     std::stringstream buffer;
-    ElemType type = this->valueType;
+    ValueType type = this->valueType;
     buffer << type << Separator;
     buffer << this->matchOperatorType << Separator;
     if (this->matchOperatorType == WHATEVER) {
@@ -27,13 +27,13 @@ std::string TupleElementPattern::serialize() {
     else if (type == STRING)
         buffer << std::get<std::string>(this->valueToCompare);
     else
-        throw std::runtime_error("niepoprawny rodzaj wartosci w serialziacji elementu");
+        throw std::runtime_error("Invalid valueType in TupleElementPattern serialization!");
     buffer << Separator;
     return buffer.str();
 }
 TupleElementPattern TupleElementPattern::deserialize(std::string &content) {
     std::string utilStr = SerializationUtils::getNextElementAndErase(content);
-    auto type = (ElemType) std::stoi(utilStr);
+    auto type = (ValueType) std::stoi(utilStr);
     utilStr = SerializationUtils::getNextElementAndErase(content);
     auto matchOperator = (MatchOperatorType) std::stoi(utilStr);
 
@@ -51,7 +51,7 @@ TupleElementPattern TupleElementPattern::deserialize(std::string &content) {
     } else if (type == STRING) {
         return TupleElementPattern(type, matchOperator, utilStr);
     } else {
-        throw std::runtime_error("niepoprawny rodzaj wartosci w deserialziacji elementu");
+        throw std::runtime_error("Invalid valueType in TuplePatternElement deserialization!");
     }
 }
 
@@ -64,7 +64,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
     } else if (typeStr == "string") {
         this->valueType = STRING;
     } else {
-        throw std::runtime_error("invalid pattern string - type");
+        throw std::runtime_error("Invalid pattern string - type");
     }
 
     std::string operatorStr = patternElementString.substr(0, std::min<size_t>(2, patternElementString.size()));
@@ -80,7 +80,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
             if (SerializationUtils::singleChars.count(operatorStr) != 0) {
                 this->matchOperatorType = SerializationUtils::singleChars[operatorStr];
             } else {
-                throw std::runtime_error("invalid pattern string - operator");
+                throw std::runtime_error("Invalid pattern string - operator");
             }
         }
 
@@ -96,6 +96,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
 }
 
 bool TuplePattern::checkIfMatch(Tuple) {
+    //TODO: DO ZROBIENIA
     return false;
 }
 
@@ -106,7 +107,7 @@ char *TuplePattern::serialize() {
     }
 
     if (serialized.size() > MAX_SIZE_IN_BYTES) {//TODO: zostawiamy to?
-        throw std::runtime_error("za duzo rozmiar krotki w bajtach");
+        throw std::runtime_error("Too many bytes after TuplePattern serialization!");
     }
     char *bytes = new char[serialized.size()];
     strcpy(bytes, serialized.c_str());
@@ -126,6 +127,19 @@ TuplePattern TuplePattern::deserialize(char *serialized) {
 }
 
 TuplePattern::TuplePattern(std::string patternString) {
+    /*
+     * Examples of correct initialize strings:
+     * 1. "string:==1, float:*, integer:<=-15"
+     * 2. "float:==0.123, integer:*, string:==abcd"
+     *
+     * Rules:
+     * 1. <Type> ":" <Operator> <Value>
+     *      -if '*' operator is given, then there should be no value!
+     * 2. Colon ':' after <Type> is crucial!
+     * 3. Strings are without '"' signs around them
+     * 4. No comas ',' and colons ':' are allowed if string values!
+     *      - i.e. "ab,das:" is invalid!
+     * */
     while (!patternString.empty()) {
         std::string elementPatternStr = SerializationUtils::getNextElementAndErase(patternString, ',');
         while (elementPatternStr[0] == ' ') {//get rid of spaces after coma

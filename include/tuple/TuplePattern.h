@@ -5,6 +5,7 @@
 #ifndef UXP1A_LINDA_TUPLE_PATTERN_H
 #define UXP1A_LINDA_TUPLE_PATTERN_H
 
+#include "../SerializationUtils.h"
 #include "Tuple.h"
 
 class TupleElementPattern {
@@ -13,25 +14,23 @@ public:
 
     bool checkIfMatch(TupleElement);
     std::string serialize();
-    static TupleElementPattern deserialize(std::string&);
+    static TupleElementPattern deserialize(std::string &);
+
 
     //for debug
     void print() {
-        std::cout << "typ:" << valueType << " operator:" << matchOperatorType << " wartosc:";
-        if (valueType == INT)
-            std::cout << std::get<int>(valueToCompare);
-        else if (valueType == FLOAT)
-            std::cout << std::get<float>(valueToCompare);
-        else if (valueType == STRING)
-            std::cout << std::get<std::string>(valueToCompare);
+        SerializationUtils::printType(valueType);
+        std::cout << ":";
+        SerializationUtils::printOperator(matchOperatorType);
+        SerializationUtils::printVariant(valueToCompare);
     }
 
 private:
-    ElemType valueType;
+    ValueType valueType;
     MatchOperatorType matchOperatorType;
     variant valueToCompare;
 
-    TupleElementPattern(ElemType ty, MatchOperatorType op, variant val)
+    TupleElementPattern(ValueType ty, MatchOperatorType op, variant val)
         : valueType(ty),
           matchOperatorType(op),
           valueToCompare(val){};
@@ -44,6 +43,7 @@ public:
     bool checkIfMatch(Tuple);
     char *serialize();
     static TuplePattern deserialize(char *);
+    [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
 
     void print() {
         int noOfElements = elementPatterns.size();

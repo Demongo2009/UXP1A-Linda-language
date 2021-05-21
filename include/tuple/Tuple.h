@@ -5,7 +5,8 @@
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 
-#include "../consts.h"
+#include "../ConstsAndEnums.h"
+#include "../SerializationUtils.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,24 +16,21 @@ public:
     explicit TupleElement(const variant &);
 
     [[nodiscard]] variant getValue() const { return value; };
-    [[nodiscard]] ElemType getType() const { return valueType; };
+    [[nodiscard]] ValueType getType() const { return valueType; };
 
     std::string serialize();
     static TupleElement deserialize(std::string &);
 
     //for debug
     void print() {
-        if (valueType == INT)
-            std::cout << std::get<int>(value);
-        else if (valueType == FLOAT)
-            std::cout << std::get<float>(value);
-        else if (valueType == STRING)
-            std::cout << std::get<std::string>(value);
+        SerializationUtils::printType(valueType);
+        std::cout<<"=";
+        SerializationUtils::printVariant(value);
     }
 
 private:
     variant value;
-    ElemType valueType;
+    ValueType valueType;
 };
 
 class Tuple {
@@ -42,7 +40,7 @@ public:
     //TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
     [[nodiscard]] TupleElement getElement(int index) const { return elements[index]; };
     [[nodiscard]] variant getElementsValue(int index) const { return elements[index].getValue(); };
-    [[nodiscard]] ElemType getElementsType(int index) const { return elements[index].getType(); };
+    [[nodiscard]] ValueType getElementsType(int index) const { return elements[index].getType(); };
     [[nodiscard]] int getNumberOfElements() const { return elements.size(); };
 
     char *serialize();
@@ -51,7 +49,7 @@ public:
     //for debug
     void print() {
         int noOfElements = elements.size();
-        std::cout << "krotka " << noOfElements << " elementowa:\n";
+        std::cout << "Krotka " << noOfElements << "io elementowa:\n";
         for (int i = 0; i < noOfElements; ++i) {
             std::cout << "\t" << i << ": ";
             elements[i].print();

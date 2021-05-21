@@ -10,6 +10,7 @@
 #include "../../include/tuple/Tuple.h"
 
 /*
+ * TODO:jakby komuś chciało sie kiedyś lepiej bawić w serializacje to można wiecej poczytać:
  * 1. https://stackoverflow.com/questions/5609915/best-practice-for-passing-primitive-data-type-in-c-function
  * 2. https://stackoverflow.com/questions/523872/how-do-you-serialize-an-object-in-c
  * 3. https://stackoverflow.com/questions/11415850/c-how-to-serialize-deserialize-objects-without-the-use-of-libraries?rq=1
@@ -34,13 +35,13 @@ TupleElement::TupleElement(const variant& val) {
             this->valueType = STRING;
             break;
         default:
-            throw std::runtime_error("niepoprawny rodzaj wartosci");
+            throw std::runtime_error("Invalid value in TupleElement constructor!");
     }
 }
 
 std::string TupleElement::serialize() {
     std::stringstream buffer;
-    ElemType type = this->valueType;
+    ValueType type = this->valueType;
     buffer << type << Separator;
     if (type == INT)
         buffer << std::get<int>(this->value);
@@ -49,14 +50,14 @@ std::string TupleElement::serialize() {
     else if (type == STRING)
         buffer << std::get<std::string>(this->value);
     else
-        throw std::runtime_error("niepoprawny rodzaj wartosci w serialziacji elementu");
+        throw std::runtime_error("Invalid valueType in TupleElement serialization!");
     buffer << Separator;
     return buffer.str();
 }
 
 TupleElement TupleElement::deserialize(std::string &content) {
     std::string utilStr = SerializationUtils::getNextElementAndErase(content);
-    auto type = (ElemType) std::stoi(utilStr);
+    auto type = (ValueType) std::stoi(utilStr);
 
     utilStr = SerializationUtils::getNextElementAndErase(content);
     if (type == INT) {
@@ -68,7 +69,7 @@ TupleElement TupleElement::deserialize(std::string &content) {
     } else if (type == STRING) {
         return TupleElement(utilStr);
     } else {
-        throw std::runtime_error("niepoprawny rodzaj wartosci w deserialziacji elementu");
+        throw std::runtime_error("Invalid valueType in TupleElement deserialization!");
     }
 }
 
@@ -79,7 +80,7 @@ char *Tuple::serialize() {
     }
 
     if (serialized.size() > MAX_SIZE_IN_BYTES) {//TODO: zostawiamy to?
-        throw std::runtime_error("za duzo rozmiar krotki w bajtach");
+        throw std::runtime_error("Too many bytes after Tuple serialization!");
     }
     char *bytes = new char[serialized.size()];
     strcpy(bytes, serialized.c_str());
@@ -100,7 +101,6 @@ Tuple Tuple::deserialize(char *serialized) {
 
 Tuple::Tuple(std::vector<variant> vector) {
     int size = vector.size();
-//w zasadzie to jak tak serializujemy to niepotrzebny jest TupleElement, ale zostawmy to więcej kodu będzie
     for (int i = 0; i < size; ++i) {
         this->elements.emplace_back(TupleElement(vector[i]));
     }

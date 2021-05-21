@@ -2,17 +2,13 @@
 // Created by Konrad Kulesza on 19.05.2021.
 //
 
-#ifndef UXP1A_LINDA_CONSTS_H
-#define UXP1A_LINDA_CONSTS_H
+#ifndef UXP1A_LINDA_CONSTSANDENUMS_H
+#define UXP1A_LINDA_CONSTSANDENUMS_H
 
-#include <variant>
 #include <string>
+#include <variant>
 
-enum ElemType {
-    INT,
-    FLOAT,
-    STRING
-};
+
 enum MatchOperatorType {
     WHATEVER,
     EQUAL,
@@ -22,10 +18,16 @@ enum MatchOperatorType {
     GREATER_EQUAL
 };
 
+// DO NOT CHANGE ORDER OF THESE!
+enum ValueType { INT,
+                 FLOAT,
+                 STRING };
+
+//THESE TOO!
 typedef std::variant<int, float, std::string> variant;
 
 const int MAX_SIZE_IN_BYTES = 512;
 const char Separator = ';';
 
 
-#endif//UXP1A_LINDA_CONSTS_H
+#endif//UXP1A_LINDA_CONSTSANDENUMS_H
