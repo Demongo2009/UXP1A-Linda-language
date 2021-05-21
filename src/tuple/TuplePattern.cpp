@@ -6,23 +6,24 @@
 #include <cstring>
 #include <sstream>
 
-bool TupleElementPattern::checkIfMatch(TupleElement element) {
-    if (element.getType() != this->valueType) {
+bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) {
+    if (tupleElement.getType() != this->valueType) {
         return false;
     }
 
     if (this->matchOperatorType == WHATEVER) {
         return true;
     }
-
-    variant elemValue = element.getValue();
+    variant pattern = this->valueToCompare;
+    MatchOperatorType op = this->matchOperatorType;
+    variant elemValue = tupleElement.getValue();
     switch (this->valueType) {
         case INT:
-            return compareInts(elemValue);
+            return TupleElementPattern::compareInts(pattern, op, elemValue);
         case FLOAT:
-            return compareFloats(elemValue);
+            return TupleElementPattern::compareFloats(pattern, op, elemValue);
         case STRING:
-            return compareStrings(elemValue);
+            return TupleElementPattern::compareStrings(pattern, op, elemValue);
     }
     return false;
 }
@@ -115,11 +116,11 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
         }
     }
 }
-bool TupleElementPattern::compareInts(variant tuple) {
-    int patternValue = std::get<int>(this->valueToCompare);
-    int tupleValue = std::get<int>(tuple);
+bool TupleElementPattern::compareInts(variant pattern, MatchOperatorType op, variant tupleElement) {
+    int patternValue = std::get<int>(pattern);
+    int tupleValue = std::get<int>(tupleElement);
 
-    switch (this->matchOperatorType) {
+    switch (op) {
         case EQUAL:
             return tupleValue == patternValue;
         case GREATER:
@@ -135,11 +136,11 @@ bool TupleElementPattern::compareInts(variant tuple) {
     }
 }
 
-bool TupleElementPattern::compareFloats(variant tuple) {
-    float patternValue = std::get<float>(this->valueToCompare);
-    float tupleValue = std::get<float>(tuple);
+bool TupleElementPattern::compareFloats(variant pattern, MatchOperatorType op, variant tupleElement) {
+    float patternValue = std::get<float>(pattern);
+    float tupleValue = std::get<float>(tupleElement);
 
-    switch (this->matchOperatorType) {
+    switch (op) {
         case EQUAL:
             throw std::runtime_error("Float-pattern should not have '==' operator!");
         case GREATER:
@@ -155,28 +156,15 @@ bool TupleElementPattern::compareFloats(variant tuple) {
     }
 }
 
-bool TupleElementPattern::compareStrings(variant tuple) {
-    std::string patternValue = std::get<std::string>(this->valueToCompare);
-    std::string tupleValue = std::get<std::string>(tuple);
+bool TupleElementPattern::compareStrings(variant pattern, MatchOperatorType op, variant tupleElement) {
+    std::string patternValue = std::get<std::string>(pattern);
+    std::string tupleValue = std::get<std::string>(tupleElement);
 
     int result = patternValue.compare(tupleValue);
-    switch (this->matchOperatorType) {
-        case EQUAL:
-            return result == 0;
-        case GREATER:
-            return result > 0;
-        case GREATER_EQUAL:
-            return result >= 0;
-        case LESS:
-            return result < 0;
-        case LESS_EQUAL:
-            return result <= 0;
-        default:
-            throw std::runtime_error("Invalid operator while comparing strings!");
-    }
+    return TupleElementPattern::compareInts(result, op, 0);//TODO: albo w odwrotnej kolejnosci, już mi się przed oczami miesza
 }
 
-bool TuplePattern::checkIfMatch(Tuple tuple) {
+bool TuplePattern::checkIfMatch(const Tuple& tuple) {
     int noOfElements = this->getNumberOfElements();
     if (tuple.getNumberOfElements() != noOfElements) {
         return false;

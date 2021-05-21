@@ -4,12 +4,12 @@
 
 int main() {
 
-    Tuple tuple = Tuple({"abc", 10, 1.5f, "aaa"});
+    Tuple tuple = Tuple({"aaa"});
     char *serializedTuple = tuple.serialize();
     Tuple tuple2 = Tuple::deserialize(serializedTuple);
     tuple2.print();
 
-    TuplePattern tuplePattern = TuplePattern("string:*, integer:*, float:*, string:>=aaa");
+    TuplePattern tuplePattern = TuplePattern("string:>aab");
     char *serializedTuplePattern = tuplePattern.serialize();
     TuplePattern tuplePattern2 = TuplePattern::deserialize(serializedTuplePattern);
     tuplePattern2.print();

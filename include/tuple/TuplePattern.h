@@ -12,7 +12,7 @@ class TupleElementPattern {
 public:
     TupleElementPattern(std::string);
 
-    bool checkIfMatch(TupleElement);
+    bool checkIfMatch(const TupleElement&);
     std::string serialize();
     static TupleElementPattern deserialize(std::string &);
 
@@ -35,16 +35,16 @@ private:
           matchOperatorType(op),
           valueToCompare(val){};
 
-    bool compareInts(variant);
-    bool compareFloats(variant);
-    bool compareStrings(variant);
+    static bool compareInts(variant, MatchOperatorType, variant);
+    static bool compareFloats(variant, MatchOperatorType, variant);
+    static bool compareStrings(variant, MatchOperatorType, variant);
 };
 
 class TuplePattern {
 public:
     TuplePattern(std::string);
 
-    bool checkIfMatch(Tuple);
+    bool checkIfMatch(const Tuple&);
     char *serialize();
     static TuplePattern deserialize(char *);
     [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
