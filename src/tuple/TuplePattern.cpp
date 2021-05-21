@@ -6,8 +6,24 @@
 #include <cstring>
 #include <sstream>
 
-bool TupleElementPattern::checkIfMatch(TupleElement) {
-    //TODO: DO ZROBIENIA
+bool TupleElementPattern::checkIfMatch(TupleElement element) {
+    if (element.getType() != this->valueType) {
+        return false;
+    }
+
+    if (this->matchOperatorType == WHATEVER) {
+        return true;
+    }
+
+    variant elemValue = element.getValue();
+    switch (this->valueType) {
+        case INT:
+            return compareInts(elemValue);
+        case FLOAT:
+            return compareFloats(elemValue);
+        case STRING:
+            return compareStrings(elemValue);
+    }
     return false;
 }
 
@@ -31,13 +47,18 @@ std::string TupleElementPattern::serialize() {
     buffer << Separator;
     return buffer.str();
 }
+
 TupleElementPattern TupleElementPattern::deserialize(std::string &content) {
     std::string utilStr = SerializationUtils::getNextElementAndErase(content);
     auto type = (ValueType) std::stoi(utilStr);
     utilStr = SerializationUtils::getNextElementAndErase(content);
     auto matchOperator = (MatchOperatorType) std::stoi(utilStr);
 
-    if(matchOperator == WHATEVER){
+    if (type == FLOAT && matchOperator == EQUAL) {
+        throw std::runtime_error("Float-pattern does not have '==' operator!");
+    }
+
+    if (matchOperator == WHATEVER) {
         return TupleElementPattern(type, matchOperator, "");
     }
 
@@ -83,7 +104,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
                 throw std::runtime_error("Invalid pattern string - operator");
             }
         }
-
+        //TODO: do not allow to create == with float!
         patternElementString.erase(0, operatorStr.size());
         if (this->valueType == INT) {
             this->valueToCompare = std::stoi(patternElementString);
@@ -94,10 +115,80 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
         }
     }
 }
+bool TupleElementPattern::compareInts(variant tuple) {
+    int patternValue = std::get<int>(this->valueToCompare);
+    int tupleValue = std::get<int>(tuple);
 
-bool TuplePattern::checkIfMatch(Tuple) {
-    //TODO: DO ZROBIENIA
-    return false;
+    switch (this->matchOperatorType) {
+        case EQUAL:
+            return tupleValue == patternValue;
+        case GREATER:
+            return tupleValue > patternValue;
+        case GREATER_EQUAL:
+            return tupleValue >= patternValue;
+        case LESS:
+            return tupleValue < patternValue;
+        case LESS_EQUAL:
+            return tupleValue <= patternValue;
+        default:
+            throw std::runtime_error("Invalid operator while comparing ints!");
+    }
+}
+
+bool TupleElementPattern::compareFloats(variant tuple) {
+    float patternValue = std::get<float>(this->valueToCompare);
+    float tupleValue = std::get<float>(tuple);
+
+    switch (this->matchOperatorType) {
+        case EQUAL:
+            throw std::runtime_error("Float-pattern should not have '==' operator!");
+        case GREATER:
+            return tupleValue > patternValue;
+        case GREATER_EQUAL:
+            return tupleValue >= patternValue;
+        case LESS:
+            return tupleValue < patternValue;
+        case LESS_EQUAL:
+            return tupleValue <= patternValue;
+        default:
+            throw std::runtime_error("Invalid operator while comparing floats!");
+    }
+}
+
+bool TupleElementPattern::compareStrings(variant tuple) {
+    std::string patternValue = std::get<std::string>(this->valueToCompare);
+    std::string tupleValue = std::get<std::string>(tuple);
+
+    int result = patternValue.compare(tupleValue);
+    switch (this->matchOperatorType) {
+        case EQUAL:
+            return result == 0;
+        case GREATER:
+            return result > 0;
+        case GREATER_EQUAL:
+            return result >= 0;
+        case LESS:
+            return result < 0;
+        case LESS_EQUAL:
+            return result <= 0;
+        default:
+            throw std::runtime_error("Invalid operator while comparing strings!");
+    }
+}
+
+bool TuplePattern::checkIfMatch(Tuple tuple) {
+    int noOfElements = this->getNumberOfElements();
+    if (tuple.getNumberOfElements() != noOfElements) {
+        return false;
+    }
+
+    for (int i = 0; i < noOfElements; ++i) {
+        if (!this->elementPatterns[i].checkIfMatch(tuple.getElement(i))) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 char *TuplePattern::serialize() {

@@ -30,10 +30,14 @@ private:
     MatchOperatorType matchOperatorType;
     variant valueToCompare;
 
-    TupleElementPattern(ValueType ty, MatchOperatorType op, variant val)
+    TupleElementPattern(ValueType ty, MatchOperatorType op, variant val) //for deserialization
         : valueType(ty),
           matchOperatorType(op),
           valueToCompare(val){};
+
+    bool compareInts(variant);
+    bool compareFloats(variant);
+    bool compareStrings(variant);
 };
 
 class TuplePattern {

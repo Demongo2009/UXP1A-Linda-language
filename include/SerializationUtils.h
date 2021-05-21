@@ -2,8 +2,8 @@
 // Created by Konrad Kulesza on 19.05.2021.
 //
 
-#ifndef UXP1A_LINDA_SERIALIZATIONUTILS_H
-#define UXP1A_LINDA_SERIALIZATIONUTILS_H
+#ifndef UXP1A_LINDA_SERIALIZATION_UTILS_H
+#define UXP1A_LINDA_SERIALIZATION_UTILS_H
 
 #include "ConstsAndEnums.h"
 #include <map>
@@ -20,4 +20,4 @@ public:
     static stringToOperator doubleChars;
 };
 
-#endif//UXP1A_LINDA_SERIALIZATIONUTILS_H
+#endif//UXP1A_LINDA_SERIALIZATION_UTILS_H

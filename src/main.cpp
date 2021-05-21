@@ -4,15 +4,22 @@
 
 int main() {
 
-    Tuple tuple = Tuple({-11, 0.95f, "naaaapis", 1, 1, "na", 0.05f});
+    Tuple tuple = Tuple({"abc", 10, 1.5f, "aaa"});
     char *serializedTuple = tuple.serialize();
     Tuple tuple2 = Tuple::deserialize(serializedTuple);
     tuple2.print();
 
-    TuplePattern tuplePattern = TuplePattern("string:*, integer:==1, float:<0.95");
+    TuplePattern tuplePattern = TuplePattern("string:*, integer:*, float:*, string:>=aaa");
     char *serializedTuplePattern = tuplePattern.serialize();
     TuplePattern tuplePattern2 = TuplePattern::deserialize(serializedTuplePattern);
     tuplePattern2.print();
+
+    if(tuplePattern.checkIfMatch(tuple)){
+        std::cout<<"PRAWDA";
+    }else{
+        std::cout<<"FALSE";
+    }
+
 
     return 0;
 }
