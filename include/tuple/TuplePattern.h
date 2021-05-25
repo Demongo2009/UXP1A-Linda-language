@@ -43,8 +43,9 @@ private:
 class TuplePattern {
 public:
     TuplePattern(std::string);
-
-    bool checkIfMatch(const Tuple&);
+    std::optional<Tuple> findMatching(const std::vector<Tuple>& tuples);
+    std::optional<Tuple> deleteMatching(std::vector<Tuple> &tuples);
+    bool checkIfMatch(const Tuple&) const ;
     char *serialize () const ;
     static TuplePattern deserialize(char *);
     [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
@@ -62,6 +63,7 @@ public:
 private:
     std::vector<TupleElementPattern> elementPatterns;
     TuplePattern(std::vector<TupleElementPattern> vec) : elementPatterns(std::move(vec)){};//for deserialization
+
 };
 
 

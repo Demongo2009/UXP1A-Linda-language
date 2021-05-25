@@ -2,7 +2,6 @@
 // Created by bartlomiej on 24.05.2021.
 //
 
-#include "../../include/tuple/Tuple.h"
 #include "../../include/server/MasterProcess.h"
 
 
@@ -20,7 +19,7 @@ void MasterProcess::receive() {
     else {
         printf("DATA RECEIVED = %s\n", buffer);
     }
-    memset(buffer, 0, sizeof(buffer));
+
 
 }
 
@@ -54,18 +53,18 @@ void MasterProcess::acceptClient() {
     clientSocket = accept(socketFileDescriptor, (struct sockaddr *) &clientAddr, &serverAddressLength);
     if (clientSocket == -1){
         printf("ACCEPT ERROR: %s\n", strerror(errno));
-        close(socketFileDescriptor);
+//        close(socketFileDescriptor);
         close(clientSocket);
-        exit(1);
+//        exit(1);
     }
 
     clientAddressLength = sizeof(clientAddr);
     currentReturnCode = getpeername(clientSocket, (struct sockaddr *) &clientAddr, &clientAddressLength);
     if (currentReturnCode == -1){
         printf("GETPEERNAME ERROR: %s\n", strerror(errno));
-        close(socketFileDescriptor);
+//        close(socketFileDescriptor);
         close(clientSocket);
-        exit(1);
+//        exit(1);
     }
     else {
         printf("Client socket filepath: %s\n", clientAddr.sun_path);
@@ -84,7 +83,6 @@ void MasterProcess::run() {
 //
     }
     close(socketFileDescriptor);
-    close(clientSocket);
 }
 void MasterProcess::respond() {
     memset(buffer, 0, sizeof(buffer));
@@ -92,9 +90,9 @@ void MasterProcess::respond() {
     currentReturnCode = send(clientSocket, buffer, strlen(buffer), 0);
     if (currentReturnCode == -1) {
         printf("SEND ERROR: %s", strerror(errno));
-        close(socketFileDescriptor);
-        close(clientSocket);
-        exit(1);
+//        close(socketFileDescriptor);
+//        close(clientSocket);
+//        exit(1);
     }
     else {
         printf("Data sent!\n");
@@ -114,12 +112,97 @@ void MasterProcess::processMessage() {
 void MasterProcess::processOutput() {
     Tuple tuple = Tuple::deserialize(buffer);
     tuple.print();
-    tuples.emplace_back(tuple); //if no one waits
-    respond();
+    if(waitingProcesses.empty()) {
+        tuples.emplace_back(tuple);
+    } else{
+        checkWaitingProcesses(tuple);
+    }
+    respond(); //TODO:może od razu odpowiedzieć?
+    close(clientSocket);
 }
+
 void MasterProcess::processRead() {
-
+    TuplePattern pattern = TuplePattern::deserialize(buffer);
+    pattern.print();
+    std::optional<Tuple> tuple;
+    if((tuple = pattern.findMatching(tuples))){
+        sendTuple(tuple.value());
+    }else{
+        createAwaitingProcess(pattern, false);
+    }
 }
-void MasterProcess::processInput() {
 
+void MasterProcess::processInput() {
+    TuplePattern pattern = TuplePattern::deserialize(buffer);
+    pattern.print();
+    std::optional<Tuple> tuple;
+    if((tuple = pattern.deleteMatching(tuples))){
+        if(!sendTuple(tuple.value()))
+            tuples.emplace_back(tuple.value());
+    }else{
+        createAwaitingProcess(pattern, true);
+    }
+}
+
+bool MasterProcess::sendTuple(const Tuple& tuple) {
+    char *msg = tuple.serialize();
+    currentReturnCode = send(clientSocket, msg, strlen(msg), 0);
+    delete[] msg;
+    if (currentReturnCode == -1) {
+        printf("SEND ERROR: %s", strerror(errno));
+         // TODO: chyba się właśnie dowiedzieliśmy że klient sobie poszedł
+        return false;
+    }
+    else {
+        printf("Data sent!\n");
+        return true;
+    }
+}
+
+void MasterProcess::createAwaitingProcess(const TuplePattern& pattern, bool isInput) {
+    int fd1[2];
+    int fd2[2];
+    if (pipe(fd1)==-1)
+    {
+        fprintf(stderr, "Pipe Failed" );
+    }
+    if (pipe(fd2)==-1)
+    {
+        fprintf(stderr, "Pipe Failed" );
+    }
+    pid_t pid = fork();
+    if(pid < 0) {
+        fprintf(stderr, "fork Failed");
+    }else if( pid > 0){
+        close(fd1[0]);
+        close(fd2[1]);
+        WaitingProcessInfo waitingProcess = WaitingProcessInfo(pid, fd2[0], fd1[1], pattern, isInput );
+        waitingProcesses.emplace_back(waitingProcess);
+        close(clientSocket);
+    }else{
+        WaitingProcess waitingProcess = WaitingProcess(fd1[0], fd2[1], clientSocket);
+        waitingProcess.run();
+    }
+}
+
+void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
+    auto it = waitingProcesses.begin();
+
+    while(it != waitingProcesses.end()) {
+        if(it->getPattern().checkIfMatch(tuple)){
+            memset(buffer, 0, sizeof(buffer));
+            char* serialized = tuple.serialize();
+            write(it->getWritePipeDescriptor(), serialized, strlen(serialized));
+            read(it->getReadPipeDescriptor(), buffer, sizeof(buffer));
+            if(it->isInput()) {
+                if (strcmp(RESPONSE, buffer) == 0) {
+                    waitingProcesses.erase(it);
+                    return;
+                }
+            }
+            it = waitingProcesses.erase(it);
+        } else
+            ++it;
+    }
+    tuples.emplace_back(tuple);
 }

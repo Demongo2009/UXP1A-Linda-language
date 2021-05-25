@@ -10,7 +10,8 @@
 
 
 void linda_output(const Tuple& tuple);
-Tuple linda_read(const TuplePattern& pattern, unsigned int timeout = 0);
-Tuple linda_input(TuplePattern pattern, unsigned int timeout = 0);
+std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout = 0); //milliseconds
+std::optional<Tuple> linda_input(TuplePattern pattern, time_t timeout = 0);
+void set_timeout(time_t timeout);
 
 #endif//UXP1A_LINDA_LINDA_H

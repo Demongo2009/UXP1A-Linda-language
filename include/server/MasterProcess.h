@@ -5,6 +5,8 @@
 #ifndef UXP1A_LINDA_MASTERPROCESS_H
 #define UXP1A_LINDA_MASTERPROCESS_H
 
+#include "../tuple/TuplePattern.h"
+#include "WaitingProcess.h"
 #include <string>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -26,6 +28,7 @@ public:
 private:
 
     std::vector<Tuple> tuples;
+    std::vector<WaitingProcessInfo> waitingProcesses;
     const static unsigned char PATH_LENGTH_LIMIT = 100;
     const static unsigned char QUEUE_LENGTH = 8;
     const std::string serverFilename = "/tmp/linda_server";
@@ -48,6 +51,9 @@ private:
     void processOutput();
     void processRead();
     void processInput();
+    bool sendTuple(const Tuple &tuple);
+    void createAwaitingProcess(const TuplePattern &pattern, bool isInput);
+    void checkWaitingProcesses(const Tuple& tuple);
 };
 
 

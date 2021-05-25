@@ -164,7 +164,7 @@ bool TupleElementPattern::compareStrings(variant pattern, MatchOperatorType op, 
     return TupleElementPattern::compareInts(result, op, 0);//TODO: albo w odwrotnej kolejnosci, już mi się przed oczami miesza
 }
 
-bool TuplePattern::checkIfMatch(const Tuple& tuple) {
+bool TuplePattern::checkIfMatch(const Tuple& tuple) const {
     int noOfElements = this->getNumberOfElements();
     if (tuple.getNumberOfElements() != noOfElements) {
         return false;
@@ -225,4 +225,22 @@ TuplePattern::TuplePattern(std::string patternString) {
         }
         this->elementPatterns.emplace_back(TupleElementPattern(elementPatternStr));
     }
+}
+std::optional<Tuple> TuplePattern::findMatching(const std::vector<Tuple> &tuples) {
+    for( const auto &it : tuples){
+        if(checkIfMatch(it))
+            return it;
+    }
+    return std::nullopt;
+}
+
+std::optional<Tuple> TuplePattern::deleteMatching(std::vector<Tuple> &tuples) {
+    for( auto it = tuples.begin(); it != tuples.end(); ++it ){
+        if(checkIfMatch(*it)) {
+            Tuple tuple = *it;
+            tuples.erase(it);
+            return tuple;
+        }
+    }
+    return std::nullopt;
 }
