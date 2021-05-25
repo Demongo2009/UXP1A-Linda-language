@@ -28,7 +28,7 @@ bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) {
     return false;
 }
 
-std::string TupleElementPattern::serialize() {
+std::string TupleElementPattern::serialize() const {
     std::stringstream buffer;
     ValueType type = this->valueType;
     buffer << type << Separator;
@@ -179,7 +179,7 @@ bool TuplePattern::checkIfMatch(const Tuple& tuple) {
     return true;
 }
 
-char *TuplePattern::serialize() {
+char *TuplePattern::serialize() const {
     std::string serialized;
     for (auto &pattern : this->elementPatterns) {
         serialized += pattern.serialize();
@@ -195,7 +195,6 @@ char *TuplePattern::serialize() {
 
 TuplePattern TuplePattern::deserialize(char *serialized) {
     std::string str(serialized);
-    delete[] serialized;
 
     std::vector<TupleElementPattern> elementPatterns;
     while (!str.empty()) {

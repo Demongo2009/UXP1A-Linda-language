@@ -18,7 +18,7 @@ public:
     [[nodiscard]] variant getValue() const { return value; };
     [[nodiscard]] ValueType getType() const { return valueType; };
 
-    std::string serialize();
+    std::string serialize() const;
     static TupleElement deserialize(std::string &);
 
     //for debug
@@ -43,7 +43,7 @@ public:
     [[nodiscard]] ValueType getElementsType(int index) const { return elements[index].getType(); };
     [[nodiscard]] int getNumberOfElements() const { return elements.size(); };
 
-    char *serialize();
+    char *serialize() const;
     static Tuple deserialize(char *);
 
     //for debug

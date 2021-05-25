@@ -13,7 +13,7 @@ public:
     TupleElementPattern(std::string);
 
     bool checkIfMatch(const TupleElement&);
-    std::string serialize();
+    std::string serialize() const ;
     static TupleElementPattern deserialize(std::string &);
 
 
@@ -45,7 +45,7 @@ public:
     TuplePattern(std::string);
 
     bool checkIfMatch(const Tuple&);
-    char *serialize();
+    char *serialize () const ;
     static TuplePattern deserialize(char *);
     [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
 

@@ -39,7 +39,7 @@ TupleElement::TupleElement(const variant& val) {
     }
 }
 
-std::string TupleElement::serialize() {
+std::string TupleElement::serialize() const {
     std::stringstream buffer;
     ValueType type = this->valueType;
     buffer << type << Separator;
@@ -73,7 +73,7 @@ TupleElement TupleElement::deserialize(std::string &content) {
     }
 }
 
-char *Tuple::serialize() {
+char *Tuple::serialize() const {
     std::string serialized;
     for (auto & element : this->elements) {
         serialized += element.serialize();
@@ -89,7 +89,7 @@ char *Tuple::serialize() {
 
 Tuple Tuple::deserialize(char *serialized) {
     std::string str(serialized);
-    delete[] serialized;
+//    delete[] serialized;
 
     std::vector<variant> valuesVector;
     while (!str.empty()) {

@@ -1,6 +1,8 @@
 #include "../include/tuple/Tuple.h"
 #include "../include/tuple/TuplePattern.h"
+#include "../include/server/MasterProcess.h"
 #include <iostream>
+
 
 int main() {
 
@@ -20,6 +22,9 @@ int main() {
         std::cout<<"FALSE";
     }
 
+
+    MasterProcess process;
+    process.run();
 
     return 0;
 }
