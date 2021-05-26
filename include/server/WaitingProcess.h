@@ -64,7 +64,7 @@ private:
     int readPipeDescriptor;
     int writePipeDescriptor;
     int clientSocket;
-    char buffer[256];
+    char buffer[512];
     const char* RESPONSE_OK = "OK";
     const char* RESPONSE_FAIL = "FAIL";
 };

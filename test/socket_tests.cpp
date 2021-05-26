@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_SUITE(socket_tests)
 
         std::ios_base::sync_with_stdio(false);
         for( int i = 0; i< 10; ++i) {
-            std::cout << " AAA " << std::endl;
             if(std::optional<Tuple> t = linda_input(tuplePattern, 1000)){
                 std::cout<<"Input received: ";
                 t.value().print();

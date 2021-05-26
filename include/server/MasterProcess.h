@@ -14,8 +14,7 @@
 
 class MasterProcess {
 public:
-
-    void run();
+    [[noreturn]] void run();
 
     MasterProcess(){
         memset(&serverAddr, 0, sizeof(serverAddr));
@@ -23,7 +22,7 @@ public:
         serverAddr.sun_family = AF_UNIX;
         strncpy(serverAddr.sun_path, serverFilename.c_str(), PATH_LENGTH_LIMIT);
         serverAddressLength = sizeof(serverAddr);
-        counter = 0;
+        clientsCounter = 0;
     }
 private:
 
@@ -34,14 +33,14 @@ private:
     const std::string serverFilename = "/tmp/linda_server";
     struct sockaddr_un serverAddr;
     struct sockaddr_un clientAddr;
-    char buffer[256];
+    char buffer[512];
     int socketFileDescriptor;
     socklen_t serverAddressLength;
     socklen_t clientAddressLength;
     long currentReturnCode;
     int clientSocket;
     const char* RESPONSE = "OK";
-    int counter;
+    int clientsCounter;
 
     void init();
     void acceptClient();

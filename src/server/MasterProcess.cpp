@@ -5,26 +5,20 @@
 #include "../../include/server/MasterProcess.h"
 #include <sys/wait.h>
 
-
-void MasterProcess::receive() {
-
-    memset(buffer, 0, sizeof(buffer));
-    printf("waiting to read...\n");
-    long bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-    if (bytesReceived == -1){
-        printf("RECV ERROR: %s\n", strerror(errno));
-        close(socketFileDescriptor);
-        close(clientSocket);
-        exit(1);
+[[noreturn]] void MasterProcess::run() {
+    init();
+    while (true) {
+        try {
+            acceptClient();
+            receive();
+            processMessage();
+            clientsCounter++;
+            std::cout << "clientsCounter: " << clientsCounter << std::endl;
+        }catch (std::exception& e){
+            std::cout<<"Exception: "<<e.what()<<std::endl;
+        }
     }
-    else {
-        printf("DATA RECEIVED = %s\n", buffer);
-    }
-
-
 }
-
-
 
 void MasterProcess::init() {
     if ((socketFileDescriptor = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
@@ -54,52 +48,33 @@ void MasterProcess::acceptClient() {
     clientSocket = accept(socketFileDescriptor, (struct sockaddr *) &clientAddr, &serverAddressLength);
     if (clientSocket == -1){
         printf("ACCEPT ERROR: %s\n", strerror(errno));
-//        close(socketFileDescriptor);
-        close(clientSocket);
-//        exit(1);
     }
 
     clientAddressLength = sizeof(clientAddr);
     currentReturnCode = getpeername(clientSocket, (struct sockaddr *) &clientAddr, &clientAddressLength);
     if (currentReturnCode == -1){
         printf("GETPEERNAME ERROR: %s\n", strerror(errno));
-//        close(socketFileDescriptor);
-        close(clientSocket);
-//        exit(1);
     }
     else {
-        printf("Client socket filepath: %s\n", clientAddr.sun_path);
+//        printf("Client socket filepath: %s\n", clientAddr.sun_path);
     }
 
 }
 
-void MasterProcess::run() {
-    init();
-    while (1) {
-        acceptClient();
-        receive();
-        processMessage();
-        counter++;
-        std::cout<<"counter: "<<counter<<std::endl;
-//
-    }
-    close(socketFileDescriptor);
-}
-void MasterProcess::respond() {
+void MasterProcess::receive() {
+
     memset(buffer, 0, sizeof(buffer));
-    strcpy(buffer, RESPONSE);
-    currentReturnCode = send(clientSocket, buffer, strlen(buffer), 0);
-    if (currentReturnCode == -1) {
-        printf("SEND ERROR: %s", strerror(errno));
-//        close(socketFileDescriptor);
-//        close(clientSocket);
-//        exit(1);
+    long bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytesReceived == -1){
+        printf("RECV ERROR: %s\n", strerror(errno));
+        close(clientSocket);
     }
     else {
-        printf("Data sent!\n");
+//        printf("DATA RECEIVED = %s\n", buffer);
     }
 
 }
+
 void MasterProcess::processMessage() {
     if( strstr(clientAddr.sun_path, "linda_output") != nullptr){
         processOutput();
@@ -118,17 +93,14 @@ void MasterProcess::processOutput() {
     } else{
         checkWaitingProcesses(tuple);
     }
-    respond(); //TODO:może od razu odpowiedzieć?
-    close(clientSocket);
+    respond();
 }
 
 void MasterProcess::processRead() {
     TuplePattern pattern = TuplePattern::deserialize(buffer);
-    pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.findMatching(tuples))){
         sendTuple(tuple.value());
-        close(clientSocket);
     }else{
         createAwaitingProcess(pattern, false);
     }
@@ -136,12 +108,10 @@ void MasterProcess::processRead() {
 
 void MasterProcess::processInput() {
     TuplePattern pattern = TuplePattern::deserialize(buffer);
-    pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.deleteMatching(tuples))){
         if(!sendTuple(tuple.value()))
             tuples.emplace_back(tuple.value());
-        close(clientSocket);
     }else{
         createAwaitingProcess(pattern, true);
     }
@@ -151,15 +121,15 @@ bool MasterProcess::sendTuple(const Tuple& tuple) {
     char *msg = tuple.serialize();
     currentReturnCode = send(clientSocket, msg, strlen(msg), 0);
     delete[] msg;
-    if (currentReturnCode == -1) {
-        printf("SEND ERROR: %s", strerror(errno));
-         // TODO: chyba się właśnie dowiedzieliśmy że klient sobie poszedł
-        return false;
-    }
-    else {
-        printf("Data sent!\n");
-        return true;
-    }
+    close(clientSocket);
+    return (currentReturnCode != -1);
+}
+
+void MasterProcess::respond() {
+    memset(buffer, 0, sizeof(buffer));
+    strcpy(buffer, RESPONSE);
+    send(clientSocket, buffer, strlen(buffer), 0);
+    close(clientSocket);
 }
 
 void MasterProcess::createAwaitingProcess(const TuplePattern& pattern, bool isInput) {
@@ -190,7 +160,6 @@ void MasterProcess::createAwaitingProcess(const TuplePattern& pattern, bool isIn
 
 void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
     auto it = waitingProcesses.begin();
-    std::cout << " checkwaiting " << std::endl;
     while(it != waitingProcesses.end()) {
         if(it->getPattern().checkIfMatch(tuple)){
             memset(buffer, 0, sizeof(buffer));
@@ -199,11 +168,7 @@ void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
             read(it->getReadPipeDescriptor(), buffer, sizeof(buffer));
             if(it->isInput()) {
                 if (strcmp(RESPONSE, buffer) == 0) {
-                    std::cout << " checkwaitingbreak " << std::endl;
-                    it->getPattern().print();
                     getChildReturnValue(it);
-
-
                     return;
                 }
             }
@@ -212,7 +177,6 @@ void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
             ++it;
     }
     tuples.emplace_back(tuple);
-    std::cout << " checkwaitingend " << std::endl;
 }
 
 void MasterProcess::getChildReturnValue(std::vector<WaitingProcessInfo>::iterator iterator) {

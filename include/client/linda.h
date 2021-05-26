@@ -12,6 +12,5 @@
 void linda_output(const Tuple& tuple);
 std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout); //milliseconds
 std::optional<Tuple> linda_input(const TuplePattern& pattern, time_t timeout);
-void set_timeout(time_t timeout);
 
 #endif//UXP1A_LINDA_LINDA_H
