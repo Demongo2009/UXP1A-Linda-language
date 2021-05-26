@@ -3,6 +3,7 @@
 //
 
 #include "../../include/server/MasterProcess.h"
+#include <sys/wait.h>
 
 
 void MasterProcess::receive() {
@@ -127,6 +128,7 @@ void MasterProcess::processRead() {
     std::optional<Tuple> tuple;
     if((tuple = pattern.findMatching(tuples))){
         sendTuple(tuple.value());
+        close(clientSocket);
     }else{
         createAwaitingProcess(pattern, false);
     }
@@ -139,6 +141,7 @@ void MasterProcess::processInput() {
     if((tuple = pattern.deleteMatching(tuples))){
         if(!sendTuple(tuple.value()))
             tuples.emplace_back(tuple.value());
+        close(clientSocket);
     }else{
         createAwaitingProcess(pattern, true);
     }
@@ -187,7 +190,7 @@ void MasterProcess::createAwaitingProcess(const TuplePattern& pattern, bool isIn
 
 void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
     auto it = waitingProcesses.begin();
-
+    std::cout << " checkwaiting " << std::endl;
     while(it != waitingProcesses.end()) {
         if(it->getPattern().checkIfMatch(tuple)){
             memset(buffer, 0, sizeof(buffer));
@@ -196,13 +199,24 @@ void MasterProcess::checkWaitingProcesses(const Tuple& tuple) {
             read(it->getReadPipeDescriptor(), buffer, sizeof(buffer));
             if(it->isInput()) {
                 if (strcmp(RESPONSE, buffer) == 0) {
-                    waitingProcesses.erase(it);
+                    std::cout << " checkwaitingbreak " << std::endl;
+                    it->getPattern().print();
+                    getChildReturnValue(it);
+
+
                     return;
                 }
             }
-            it = waitingProcesses.erase(it);
+            getChildReturnValue(it);
         } else
             ++it;
     }
     tuples.emplace_back(tuple);
+    std::cout << " checkwaitingend " << std::endl;
+}
+
+void MasterProcess::getChildReturnValue(std::vector<WaitingProcessInfo>::iterator iterator) {
+    int status;
+    waitpid(iterator->getPid(), &status, 0);
+    waitingProcesses.erase(iterator);
 }

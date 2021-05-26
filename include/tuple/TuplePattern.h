@@ -12,13 +12,13 @@ class TupleElementPattern {
 public:
     TupleElementPattern(std::string);
 
-    bool checkIfMatch(const TupleElement&);
+    bool checkIfMatch(const TupleElement&) const;
     std::string serialize() const ;
     static TupleElementPattern deserialize(std::string &);
 
 
     //for debug
-    void print() {
+    void print() const {
         SerializationUtils::printType(valueType);
         std::cout << ":";
         SerializationUtils::printOperator(matchOperatorType);
@@ -50,7 +50,7 @@ public:
     static TuplePattern deserialize(char *);
     [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
 
-    void print() {
+    void print() const {
         int noOfElements = elementPatterns.size();
         std::cout << "wzorzec " << noOfElements << " elementowy:\n";
         for (int i = 0; i < noOfElements; ++i) {

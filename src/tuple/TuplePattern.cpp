@@ -6,7 +6,7 @@
 #include <cstring>
 #include <sstream>
 
-bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) {
+bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) const {
     if (tupleElement.getType() != this->valueType) {
         return false;
     }

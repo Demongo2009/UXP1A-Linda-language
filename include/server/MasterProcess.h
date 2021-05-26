@@ -40,20 +40,21 @@ private:
     socklen_t clientAddressLength;
     long currentReturnCode;
     int clientSocket;
+    const char* RESPONSE = "OK";
+    int counter;
 
     void init();
     void acceptClient();
     void receive();
     void processMessage();
     void respond();
-    const char* RESPONSE = "OK";
-    int counter;
     void processOutput();
     void processRead();
     void processInput();
     bool sendTuple(const Tuple &tuple);
     void createAwaitingProcess(const TuplePattern &pattern, bool isInput);
     void checkWaitingProcesses(const Tuple& tuple);
+    void getChildReturnValue(std::vector<WaitingProcessInfo>::iterator iterator);
 };
 
 

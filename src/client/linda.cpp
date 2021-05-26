@@ -29,7 +29,7 @@ void linda_output(const Tuple& tuple){
     if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
     }
-
+    unlink(client_filename.c_str());
     if(bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr))){
 //        perror("bind failed");
     }
@@ -63,7 +63,7 @@ void linda_output(const Tuple& tuple){
 
 }
 
-std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout){
+std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout = 0){
     std::string server_filename = "/tmp/linda_server";
     std::string client_filename = "/tmp/linda_read_" + std::to_string(getpid());
 
@@ -80,7 +80,7 @@ std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout){
     if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
     }
-
+    unlink(client_filename.c_str());
     if(bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr))){
 //        perror("bind failed");
     }
@@ -98,16 +98,18 @@ std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout){
     delete[] msg;
     char buf[256];
     memset(buf, 0, sizeof(buf));
+    if(timeout)
+        set_timeout(timeout);
     int rc = recv(sockfd, buf, sizeof(buf), 0);
     if (rc == -1) {
-        printf("RECV ERROR = %s\n", strerror(errno));
+//        printf("RECV ERROR = %s\n", strerror(errno));
         close(sockfd);
         return std::nullopt;
     }
     else {
         Tuple tuple = Tuple::deserialize(buf);
-        printf("DATA RECEIVED = %s\n", buf);
-        tuple.print();
+//        printf("DATA RECEIVED = %s\n", buf);
+//        tuple.print();
         close(sockfd);
         return tuple;
     }
@@ -115,7 +117,7 @@ std::optional<Tuple> linda_read(const TuplePattern& pattern, time_t timeout){
 
 }
 
-std::optional<Tuple> linda_input(const TuplePattern& pattern, time_t timeout){
+std::optional<Tuple> linda_input(const TuplePattern& pattern, time_t timeout = 0){
     std::string server_filename = "/tmp/linda_server";
     std::string client_filename = "/tmp/linda_input_" + std::to_string(getpid());
 
@@ -132,7 +134,7 @@ std::optional<Tuple> linda_input(const TuplePattern& pattern, time_t timeout){
     if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
     }
-
+    unlink(client_filename.c_str());
     if(bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr))){
 //        perror("bind failed");
     }
@@ -150,16 +152,20 @@ std::optional<Tuple> linda_input(const TuplePattern& pattern, time_t timeout){
     delete[] msg;
     char buf[256];
     memset(buf, 0, sizeof(buf));
+    if(timeout)
+        set_timeout(timeout);
     int rc = recv(sockfd, buf, sizeof(buf), 0);
     if (rc == -1) {
-        printf("RECV ERROR = %s\n", strerror(errno));
+//        printf("RECV ERROR = %s\n", strerror(errno));
         close(sockfd);
         return std::nullopt;
     }
     else {
+        std::cout << " LINDA INPUT " << buf <<std::endl;
         Tuple tuple = Tuple::deserialize(buf);
-        printf("DATA RECEIVED = %s\n", buf);
-        tuple.print();
+        std::cout << " LINDA INPUT2 " << std::endl;
+//        printf("DATA RECEIVED = %s\n", buf);
+//        tuple.print();
         close(sockfd);
         return tuple;
     }
