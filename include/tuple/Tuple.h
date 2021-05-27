@@ -1,7 +1,3 @@
-//
-// Created by konrad on 5/1/21.
-//
-
 #ifndef UXP1A_LINDA_TUPLE_H
 #define UXP1A_LINDA_TUPLE_H
 

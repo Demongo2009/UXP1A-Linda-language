@@ -1,7 +1,3 @@
-//
-// Created by Konrad Kulesza on 19.05.2021.
-//
-
 #ifndef UXP1A_LINDA_TUPLE_PATTERN_H
 #define UXP1A_LINDA_TUPLE_PATTERN_H
 
