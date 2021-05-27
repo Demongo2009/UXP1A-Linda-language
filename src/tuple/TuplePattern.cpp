@@ -1,7 +1,3 @@
-//
-// Created by Konrad Kulesza on 19.05.2021.
-//
-
 #include "../../include/tuple/TuplePattern.h"
 #include <cstring>
 #include <sstream>

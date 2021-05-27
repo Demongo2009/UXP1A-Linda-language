@@ -1,7 +1,3 @@
-//
-// Created by bartlomiej on 24.05.2021.
-//
-
 #ifndef UXP1A_LINDA_MASTERPROCESS_H
 #define UXP1A_LINDA_MASTERPROCESS_H
 
@@ -22,7 +18,6 @@ public:
         serverAddr.sun_family = AF_UNIX;
         strncpy(serverAddr.sun_path, serverFilename.c_str(), PATH_LENGTH_LIMIT);
         serverAddressLength = sizeof(serverAddr);
-        clientsCounter = 0;
     }
 private:
 
@@ -40,7 +35,6 @@ private:
     long currentReturnCode;
     int clientSocket;
     const char* RESPONSE = "OK";
-    int clientsCounter;
 
     void init();
     void acceptClient();

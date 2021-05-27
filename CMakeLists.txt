@@ -13,3 +13,6 @@ ADD_EXECUTABLE(uxp1a-linda $<TARGET_OBJECTS:linda_objects> src/main.cpp)
 target_link_libraries(uxp1a-linda ${Boost_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(test)
+
+
+ADD_EXECUTABLE(test_cli $<TARGET_OBJECTS:linda_objects> src/test_cli.cpp)

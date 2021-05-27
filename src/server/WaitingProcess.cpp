@@ -1,6 +1,3 @@
-//
-// Created by bartlomiej on 25.05.2021.
-//
 #include "../../include/server/WaitingProcess.h"
 #include <cstring>
 #include <sys/socket.h>

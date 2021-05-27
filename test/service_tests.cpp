@@ -1,6 +1,3 @@
-//
-// Created by bartlomiej on 24.05.2021.
-//
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE SocketTests
 #include <boost/test/unit_test.hpp>

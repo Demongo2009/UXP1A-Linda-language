@@ -1,7 +1,3 @@
-//
-// Created by bartlomiej on 24.05.2021.
-//
-
 #include "../../include/server/MasterProcess.h"
 #include <sys/wait.h>
 
@@ -12,8 +8,6 @@
             acceptClient();
             receive();
             processMessage();
-            clientsCounter++;
-            std::cout << "clientsCounter: " << clientsCounter << std::endl;
         }catch (std::exception& e){
             std::cout<<"Exception: "<<e.what()<<std::endl;
         }
@@ -21,6 +15,7 @@
 }
 
 void MasterProcess::init() {
+    printf("initializing MasterProcess...\n");
     if ((socketFileDescriptor = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         perror("socket failed");
     }
@@ -44,7 +39,8 @@ void MasterProcess::init() {
 }
 
 void MasterProcess::acceptClient() {
-
+    printf("-------------------------\n");
+    printf("waiting for client...\n");
     clientSocket = accept(socketFileDescriptor, (struct sockaddr *) &clientAddr, &serverAddressLength);
     if (clientSocket == -1){
         printf("ACCEPT ERROR: %s\n", strerror(errno));
@@ -58,7 +54,6 @@ void MasterProcess::acceptClient() {
     else {
 //        printf("Client socket filepath: %s\n", clientAddr.sun_path);
     }
-
 }
 
 void MasterProcess::receive() {
@@ -76,6 +71,7 @@ void MasterProcess::receive() {
 }
 
 void MasterProcess::processMessage() {
+    printf("processing message...\n");
     if( strstr(clientAddr.sun_path, "linda_output") != nullptr){
         processOutput();
     }else if( strstr(clientAddr.sun_path, "linda_read") != nullptr){
@@ -86,8 +82,9 @@ void MasterProcess::processMessage() {
 }
 
 void MasterProcess::processOutput() {
+    printf("linda_output...\n");
     Tuple tuple = Tuple::deserialize(buffer);
-    tuple.print();
+    //tuple.print();
     if(waitingProcesses.empty()) {
         tuples.emplace_back(tuple);
     } else{
@@ -97,7 +94,9 @@ void MasterProcess::processOutput() {
 }
 
 void MasterProcess::processRead() {
+    printf("linda_read...\n");
     TuplePattern pattern = TuplePattern::deserialize(buffer);
+    //pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.findMatching(tuples))){
         sendTuple(tuple.value());
@@ -107,7 +106,9 @@ void MasterProcess::processRead() {
 }
 
 void MasterProcess::processInput() {
+    printf("linda_input...\n");
     TuplePattern pattern = TuplePattern::deserialize(buffer);
+    //pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.deleteMatching(tuples))){
         if(!sendTuple(tuple.value()))
@@ -133,6 +134,7 @@ void MasterProcess::respond() {
 }
 
 void MasterProcess::createAwaitingProcess(const TuplePattern& pattern, bool isInput) {
+    printf("creating waiting process...\n");
     int fd1[2];
     int fd2[2];
     if (pipe(fd1)==-1)

@@ -1,7 +1,3 @@
-//
-// Created by bartlomiej on 24.05.2021.
-//
-
 #ifndef UXP1A_LINDA_LINDA_H
 #define UXP1A_LINDA_LINDA_H
 

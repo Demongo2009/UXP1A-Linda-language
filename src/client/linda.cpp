@@ -1,7 +1,3 @@
-//
-// Created by bartlomiej on 24.05.2021.
-//
-
 #include "../../include/client/linda.h"
 #include <csignal>
 #include <sys/socket.h>
@@ -45,7 +41,7 @@ void init(){
     }
     unlink(client_filename.c_str());
     if(bind(sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr))){
-//        perror("bind failed");
+        perror("bind failed");
     }
 
     if(connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))){
@@ -72,21 +68,21 @@ void wait_for_response(){
     }
 
     close(sockfd);
-
 }
 
 std::optional<Tuple> wait_for_tuple(){
     char buf[512];
+    memset(buf, 0, sizeof(buf));
     long rc = recv(sockfd, buf, sizeof(buf), 0);
     if (rc == -1) {
-//        printf("RECV ERROR = %s\n", strerror(errno));
+        //TODO: tutaj zawsze wypisuje się 'RECV ERROR = Bad file descriptor' jak mamy timeout, ja bym olał wypisywanie tego błędu
+        // wiem ze brzydkie rozwiazanie, ale kij w to
+        //printf("RECV ERROR = %s\n", strerror(errno));
         close(sockfd);
         return std::nullopt;
     }
     else {
         Tuple tuple = Tuple::deserialize(buf);
-//        printf("DATA RECEIVED = %s\n", buf);
-//        tuple.print();
         close(sockfd);
         return tuple;
     }
@@ -118,5 +114,4 @@ void linda_output(const Tuple& tuple){
     char *msg = tuple.serialize();
     send_to_server(msg);
     wait_for_response();
-
 }

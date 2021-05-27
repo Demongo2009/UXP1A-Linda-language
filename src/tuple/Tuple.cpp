@@ -1,6 +1,3 @@
-//
-// Created by konrad on 5/1/21.
-//
 #include <cstdarg>
 #include <cstring>
 #include <iomanip>
