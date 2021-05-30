@@ -1,12 +1,8 @@
-//
-// Created by Konrad Kulesza on 19.05.2021.
-//
-
 #include "../../include/tuple/TuplePattern.h"
 #include <cstring>
 #include <sstream>
 
-bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) {
+bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) const {
     if (tupleElement.getType() != this->valueType) {
         return false;
     }
@@ -28,7 +24,7 @@ bool TupleElementPattern::checkIfMatch(const TupleElement& tupleElement) {
     return false;
 }
 
-std::string TupleElementPattern::serialize() {
+std::string TupleElementPattern::serialize() const {
     std::stringstream buffer;
     ValueType type = this->valueType;
     buffer << type << Separator;
@@ -105,7 +101,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
                 throw std::runtime_error("Invalid pattern string - operator");
             }
         }
-        //TODO: do not allow to create == with float!
+
         patternElementString.erase(0, operatorStr.size());
         if (this->valueType == INT) {
             this->valueToCompare = std::stoi(patternElementString);
@@ -164,7 +160,7 @@ bool TupleElementPattern::compareStrings(variant pattern, MatchOperatorType op, 
     return TupleElementPattern::compareInts(result, op, 0);//TODO: albo w odwrotnej kolejnosci, już mi się przed oczami miesza
 }
 
-bool TuplePattern::checkIfMatch(const Tuple& tuple) {
+bool TuplePattern::checkIfMatch(const Tuple& tuple) const {
     int noOfElements = this->getNumberOfElements();
     if (tuple.getNumberOfElements() != noOfElements) {
         return false;
@@ -179,7 +175,7 @@ bool TuplePattern::checkIfMatch(const Tuple& tuple) {
     return true;
 }
 
-char *TuplePattern::serialize() {
+char *TuplePattern::serialize() const {
     std::string serialized;
     for (auto &pattern : this->elementPatterns) {
         serialized += pattern.serialize();
@@ -195,7 +191,6 @@ char *TuplePattern::serialize() {
 
 TuplePattern TuplePattern::deserialize(char *serialized) {
     std::string str(serialized);
-    delete[] serialized;
 
     std::vector<TupleElementPattern> elementPatterns;
     while (!str.empty()) {
@@ -226,4 +221,22 @@ TuplePattern::TuplePattern(std::string patternString) {
         }
         this->elementPatterns.emplace_back(TupleElementPattern(elementPatternStr));
     }
+}
+std::optional<Tuple> TuplePattern::findMatching(const std::vector<Tuple> &tuples) {
+    for( const auto &it : tuples){
+        if(checkIfMatch(it))
+            return it;
+    }
+    return std::nullopt;
+}
+
+std::optional<Tuple> TuplePattern::deleteMatching(std::vector<Tuple> &tuples) {
+    for( auto it = tuples.begin(); it != tuples.end(); ++it ){
+        if(checkIfMatch(*it)) {
+            Tuple tuple = *it;
+            tuples.erase(it);
+            return tuple;
+        }
+    }
+    return std::nullopt;
 }

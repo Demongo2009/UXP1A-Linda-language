@@ -1,6 +1,3 @@
-//
-// Created by konrad on 5/1/21.
-//
 #include <cstdarg>
 #include <cstring>
 #include <iomanip>
@@ -39,7 +36,23 @@ TupleElement::TupleElement(const variant& val) {
     }
 }
 
-std::string TupleElement::serialize() {
+TupleElement::TupleElement(bool, std::string tupleElementString) {
+    std::string typeStr = SerializationUtils::getNextElementAndErase(tupleElementString, ':');
+    if (typeStr == "integer") {
+        this->valueType = INT;
+        this->value = std::stoi(tupleElementString);
+    } else if (typeStr == "float") {
+        this->valueType = FLOAT;
+        this->value = std::stof(tupleElementString);
+    } else if (typeStr == "string") {
+        this->valueType = STRING;
+        this->value = tupleElementString;
+    } else {
+        throw std::runtime_error("Invalid pattern string - type");
+    }
+}
+
+std::string TupleElement::serialize() const {
     std::stringstream buffer;
     ValueType type = this->valueType;
     buffer << type << Separator;
@@ -73,7 +86,24 @@ TupleElement TupleElement::deserialize(std::string &content) {
     }
 }
 
-char *Tuple::serialize() {
+Tuple::Tuple(std::vector<variant> vector) {
+    int size = vector.size();
+    for (int i = 0; i < size; ++i) {
+        this->elements.emplace_back(TupleElement(vector[i]));
+    }
+}
+
+Tuple::Tuple(bool, std::string tupleString) {
+    while (!tupleString.empty()) {
+        std::string tupleElementString = SerializationUtils::getNextElementAndErase(tupleString, ',');
+        while (tupleElementString[0] == ' ') {//get rid of spaces after coma
+            tupleElementString.erase(0, 1);
+        }
+        this->elements.emplace_back(TupleElement(false, tupleElementString));
+    }
+}
+
+char *Tuple::serialize() const {
     std::string serialized;
     for (auto & element : this->elements) {
         serialized += element.serialize();
@@ -89,7 +119,6 @@ char *Tuple::serialize() {
 
 Tuple Tuple::deserialize(char *serialized) {
     std::string str(serialized);
-    delete[] serialized;
 
     std::vector<variant> valuesVector;
     while (!str.empty()) {
@@ -99,9 +128,4 @@ Tuple Tuple::deserialize(char *serialized) {
     return Tuple(valuesVector);
 }
 
-Tuple::Tuple(std::vector<variant> vector) {
-    int size = vector.size();
-    for (int i = 0; i < size; ++i) {
-        this->elements.emplace_back(TupleElement(vector[i]));
-    }
-}
+

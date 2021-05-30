@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.17)
 project(uxp1a-linda)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
-add_executable(uxp1a-linda src/main.cpp src/tuple/Tuple.cpp include/SerializationUtils.h src/SerializationUtils.cpp include/ConstsAndEnums.h src/tuple/TuplePattern.cpp include/tuple/TuplePattern.h)
+find_package(Boost COMPONENTS unit_test_framework  REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
+FILE(GLOB_RECURSE LINDA_SOURCES src/*/*.cpp)
+ADD_LIBRARY(linda_objects OBJECT ${LINDA_SOURCES})
+ADD_EXECUTABLE(uxp1a-linda $<TARGET_OBJECTS:linda_objects> src/main.cpp)
+#add_executable(uxp1a-linda src/main.cpp src/server/WaitingProcess.cpp src/server/MasterProcess.cpp  src/client/linda.cpp src/tuple/Tuple.cpp src/util/SerializationUtils.cpp src/tuple/TuplePattern.cpp)
+target_link_libraries(uxp1a-linda ${Boost_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(test)
+
+
+ADD_EXECUTABLE(test_cli $<TARGET_OBJECTS:linda_objects> src/test_cli.cpp)

@@ -1,7 +1,3 @@
-//
-// Created by Konrad Kulesza on 19.05.2021.
-//
-
 #ifndef UXP1A_LINDA_TUPLE_PATTERN_H
 #define UXP1A_LINDA_TUPLE_PATTERN_H
 
@@ -12,13 +8,13 @@ class TupleElementPattern {
 public:
     TupleElementPattern(std::string);
 
-    bool checkIfMatch(const TupleElement&);
-    std::string serialize();
+    bool checkIfMatch(const TupleElement&) const;
+    std::string serialize() const ;
     static TupleElementPattern deserialize(std::string &);
 
 
     //for debug
-    void print() {
+    void print() const {
         SerializationUtils::printType(valueType);
         std::cout << ":";
         SerializationUtils::printOperator(matchOperatorType);
@@ -43,13 +39,14 @@ private:
 class TuplePattern {
 public:
     TuplePattern(std::string);
-
-    bool checkIfMatch(const Tuple&);
-    char *serialize();
+    std::optional<Tuple> findMatching(const std::vector<Tuple>& tuples);
+    std::optional<Tuple> deleteMatching(std::vector<Tuple> &tuples);
+    bool checkIfMatch(const Tuple&) const ;
+    char *serialize () const ;
     static TuplePattern deserialize(char *);
     [[nodiscard]] int getNumberOfElements() const { return elementPatterns.size(); };
 
-    void print() {
+    void print() const {
         int noOfElements = elementPatterns.size();
         std::cout << "wzorzec " << noOfElements << " elementowy:\n";
         for (int i = 0; i < noOfElements; ++i) {
@@ -62,6 +59,7 @@ public:
 private:
     std::vector<TupleElementPattern> elementPatterns;
     TuplePattern(std::vector<TupleElementPattern> vec) : elementPatterns(std::move(vec)){};//for deserialization
+
 };
 
 
