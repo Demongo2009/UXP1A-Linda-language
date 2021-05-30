@@ -101,7 +101,7 @@ TupleElementPattern::TupleElementPattern(std::string patternElementString) {
                 throw std::runtime_error("Invalid pattern string - operator");
             }
         }
-        //TODO: do not allow to create == with float!
+
         patternElementString.erase(0, operatorStr.size());
         if (this->valueType == INT) {
             this->valueToCompare = std::stoi(patternElementString);

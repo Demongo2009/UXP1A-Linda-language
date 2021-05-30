@@ -14,6 +14,16 @@ int main(){
      *      c. proces czyta po jednej linijcie i wykonuje sekwencyjnie te komendy jednocześnie wypisując co się dzieje żeby można było weryfikowac
      *  3. przedmiot maksowany essa profit
      */
+     /**
+      * Teraz można tworzyć krotki za pomocą stringa
+      * ALE UWAGA!!!
+      * jako pierwszy argument musi być dowolny boolean, bo jak go nie ma to mamy `unambigious declaration`
+      * czyli żeby zrobić krotkę (1, "nanana", 12.12) za pomocą stringa to musimy to zrobić tak:
+      * Tuple tuple = Tuple(false(!!!), "integer:1, string:nanana, float:12.12");
+      *
+      * jakie to ma konsekwencje? kompletnie żadne
+      * jedyne to musimy pamiętać podczas tworzenia CLI żeby wywoływać konstruktor z pierwszym booleanem
+      * */
     Tuple t1 = Tuple({1, 2, 3});
     linda_output(t1);
 

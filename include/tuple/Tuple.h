@@ -9,7 +9,8 @@
 
 class TupleElement {
 public:
-    explicit TupleElement(const variant &);
+    TupleElement(const variant &);
+    TupleElement(bool switcher, std::string);
 
     [[nodiscard]] variant getValue() const { return value; };
     [[nodiscard]] ValueType getType() const { return valueType; };
@@ -31,7 +32,8 @@ private:
 
 class Tuple {
 public:
-    explicit Tuple(std::vector<variant>);
+    Tuple(std::vector<variant>);
+    Tuple(bool switcher, std::string);
 
     //TODO: jakies sprawdzanie indexu- ale to ewentualnie potem
     [[nodiscard]] TupleElement getElement(int index) const { return elements[index]; };
