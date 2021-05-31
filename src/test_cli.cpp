@@ -2,6 +2,12 @@
 #include <iostream>
 #include <ctime>
 #include <unistd.h>
+#include <sstream>
+
+void lindaReadOrInput(std::stringstream &ss, std::vector<std::string> &vecWord, bool isRead);
+void lindaOutput(std::stringstream &ss, std::vector<std::string> &vecWord);
+
+
 int main(){
     /**
      * TODO:
@@ -24,16 +30,131 @@ int main(){
       * jakie to ma konsekwencje? kompletnie żadne
       * jedyne to musimy pamiętać podczas tworzenia CLI żeby wywoływać konstruktor z pierwszym booleanem
       * */
-    Tuple t1 = Tuple({1, 2, 3});
-    linda_output(t1);
+//    Tuple t1 = Tuple({1, 2, 3});
+//    linda_output(t1);
+//
+//    TuplePattern p1 = TuplePattern("integer:*, string:*, integer:*");
+//    time_t time1 = 1000;
+//    std::optional<Tuple> t2 = linda_input(p1, time1);
+//    if(t2){
+//        t2.value().print();
+//    }else{
+//        std::cout<<"timeout"<<std::endl;
+//    }
 
-    TuplePattern p1 = TuplePattern("integer:*, string:*, integer:*");
-    time_t time1 = 1000;
-    std::optional<Tuple> t2 = linda_input(p1, time1);
-    if(t2){
-        t2.value().print();
-    }else{
-        std::cout<<"timeout"<<std::endl;
+    std::stringstream ss;
+    std::string line;
+    std::getline(std::cin, line);
+    std::vector<std::string> vecWord;
+
+    while(line != "q"){
+        ss << line;
+        for(std::string s; ss >>s;){
+            vecWord.push_back(s);
+        }
+
+
+        if(vecWord[0] == "read") {
+            lindaReadOrInput(ss, vecWord, true);
+
+        } else if(vecWord[0] == "input"){
+            lindaReadOrInput(ss, vecWord, false);
+
+        } else if(vecWord[0] == "output"){
+            lindaOutput(ss, vecWord);
+
+        } else{
+            std::cout << "Unrecognised command!\n";
+        }
+        ss.clear();
+        vecWord.clear();
+        std::getline(std::cin, line);
     }
 
+}
+
+void lindaOutput(std::stringstream &ss, std::vector<std::string> &vecWord) {
+
+    std::string tuple;
+    if(vecWord.size() > 1){
+        tuple = std::string (vecWord[1].begin(), vecWord[1].end());
+        auto it = tuple.begin();
+
+        while(it != tuple.end()){
+            if(*it == ';'){
+                *it = ',';
+                it++;
+            }
+            it++;
+        }
+    }else{
+        std::cout << "No tuple pattern!\n";
+        return;
+    }
+
+    for(int i=0; i<tuple.size() ;i++){
+        if(tuple[i] == ','){
+            i++;
+            tuple.insert(i, " ");
+        }
+    }
+
+
+    Tuple p = Tuple(false, tuple);
+
+    linda_output(p);
+
+    std::cout << "User passed: ";
+    p.print();
+    std::cout << "\n";
+
+}
+
+void lindaReadOrInput(std::stringstream &ss, std::vector<std::string> &vecWord, bool isRead) {
+
+    std::string tupleTemplate= "";
+    if(vecWord.size() > 1){
+        tupleTemplate = std::string (vecWord[1].begin(), vecWord[1].end());
+        auto it = tupleTemplate.begin();
+        while(*it != '\000'){
+            if(*it == ';'){
+                *it = ',';
+                it++;
+            }
+            it++;
+        }
+    }else{
+        std::cout << "No tuple pattern!\n";
+        return;
+    }
+    long int timeout;
+
+    for(int i=0; i<tupleTemplate.size() ;i++){
+        if(tupleTemplate[i] == ','){
+            i++;
+            tupleTemplate.insert(i, " ");
+        }
+    }
+
+
+    if(vecWord.size() > 2){
+        timeout = atol(vecWord[2].c_str());
+    }else{
+        std::cout << "Needs timeout!\n";
+        return;
+    }
+
+    TuplePattern p = TuplePattern(tupleTemplate);
+    time_t time = timeout;
+    std::optional<Tuple> readTuple;
+    if(isRead){
+        readTuple = linda_read(p,time);
+    }else{
+        readTuple = linda_input(p,time);
+    }
+    if(readTuple.has_value()){
+        readTuple.value().print();
+    } else{
+        std::cout << time << "ms have passed!\n";
+    }
 }
