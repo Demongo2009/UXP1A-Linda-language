@@ -44,6 +44,11 @@ int main(){
 
     std::stringstream ss;
     std::string line;
+    std::cout << "\nPlease input command:\nread <tuplePattern> <timeoutInMilisec>\n"
+                 "input <tuplePattern> <timeoutInMilisec>\n"
+                 "output <tuple>\n"
+                 "q (in order to quit)\n"
+                 "Please input tuple or tuplePattern as one string with ';' as separation, eg. 'string:==a;integer:>1'\n";
     std::getline(std::cin, line);
     std::vector<std::string> vecWord;
 
@@ -68,6 +73,11 @@ int main(){
         }
         ss.clear();
         vecWord.clear();
+        std::cout << "\nPlease input command:\nread <tuplePattern> <timeoutInMilisec>\n"
+                     "input <tuplePattern> <timeoutInMilisec>\n"
+                     "output <tuple>\n"
+                     "q (in order to quit)\n"
+                     "Please input tuple or tuplePattern as one string with ';' as separation, eg. 'string:==a;integer:>1'\n";
         std::getline(std::cin, line);
     }
 
@@ -99,14 +109,26 @@ void lindaOutput(std::stringstream &ss, std::vector<std::string> &vecWord) {
         }
     }
 
+    if(tuple.size() > MAX_SIZE_IN_BYTES){
+        std::cout<< "Tuple is too big!\n";
+        return;
+    }
+    Tuple* p = nullptr;
+    try{
+        p = new Tuple(false, tuple);
 
-    Tuple p = Tuple(false, tuple);
+    }catch (std::runtime_error e){
+        std::cout << e.what() << "\n";
+        return;
+    }
 
-    linda_output(p);
+    linda_output(*p);
 
     std::cout << "User passed: ";
-    p.print();
+    (*p).print();
     std::cout << "\n";
+
+    delete(p);
 
 }
 
@@ -144,17 +166,31 @@ void lindaReadOrInput(std::stringstream &ss, std::vector<std::string> &vecWord, 
         return;
     }
 
-    TuplePattern p = TuplePattern(tupleTemplate);
+    if(tupleTemplate.size() > MAX_SIZE_IN_BYTES){
+        std::cout<< "Tuple is too big!\n";
+        return;
+    }
+
+    TuplePattern *p = nullptr;
+    try{
+       p = new TuplePattern(tupleTemplate);
+
+    }catch(std::runtime_error e) {
+        std::cout << e.what() <<"\n";
+        return;
+    }
     time_t time = timeout;
     std::optional<Tuple> readTuple;
     if(isRead){
-        readTuple = linda_read(p,time);
+        readTuple = linda_read(*p,time);
     }else{
-        readTuple = linda_input(p,time);
+        readTuple = linda_input(*p,time);
     }
     if(readTuple.has_value()){
         readTuple.value().print();
     } else{
         std::cout << time << "ms have passed!\n";
     }
+
+    delete(p);
 }
