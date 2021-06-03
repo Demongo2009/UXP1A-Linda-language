@@ -5,10 +5,6 @@
 
 
 int main() {
-
-
     MasterProcess process;
     process.run();
-
-    return 0;
 }

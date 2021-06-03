@@ -203,8 +203,8 @@ TuplePattern TuplePattern::deserialize(char *serialized) {
 TuplePattern::TuplePattern(std::string patternString) {
     /*
      * Examples of correct initialize strings:
-     * 1. "string:==1, float:*, integer:<=-15"
-     * 2. "float:==0.123, integer:*, string:==abcd"
+     * 1. "string:==1; float:*; integer:<=-15"
+     * 2. "float:==0.123; integer:*; string:==abcd"
      *
      * Rules:
      * 1. <Type> ":" <Operator> <Value>
@@ -212,10 +212,10 @@ TuplePattern::TuplePattern(std::string patternString) {
      * 2. Colon ':' after <Type> is crucial!
      * 3. Strings are without '"' signs around them
      * 4. No comas ',' and colons ':' are allowed if string values!
-     *      - i.e. "ab,das:" is invalid!
+     *      - i.e. "ab;das:" is invalid!
      * */
     while (!patternString.empty()) {
-        std::string elementPatternStr = SerializationUtils::getNextElementAndErase(patternString, ',');
+        std::string elementPatternStr = SerializationUtils::getNextElementAndErase(patternString, ';');
         while (elementPatternStr[0] == ' ') {//get rid of spaces after coma
             elementPatternStr.erase(0, 1);
         }

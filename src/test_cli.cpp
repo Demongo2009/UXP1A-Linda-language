@@ -1,196 +1,124 @@
 #include "../include/client/linda.h"
 #include <iostream>
 #include <ctime>
-#include <unistd.h>
 #include <sstream>
+#include <fstream>
 
-void lindaReadOrInput(std::stringstream &ss, std::vector<std::string> &vecWord, bool isRead);
-void lindaOutput(std::stringstream &ss, std::vector<std::string> &vecWord);
+void lindaMultiplexer(std::string &);
+void lindaReadOrInput(std::string&,std::string&, bool isRead);
+void lindaOutput(std::string &);
+
+void fileInput(const std::string&);
+void userInput();
 
 
-int main(){
-    /**
-     * TODO:
-     *  1. trzeba jakieś mozliwie proste cli, zeby mozna bylo odpalic dwie/trzy konsole i zaprezentować realtime
-     *  2. i ten najprostszy mozliwy interpreter, ja sobie to tak wyobrazalem:
-     *      a. proces bierze na wejściu nazwe pliku w ktorym ma komendy
-     *      b. komendy sa napisane tak:
-     *          |<nazwa_komendy> <wzorzec_krotki/krotka> <timeout(dla input/read)>|
-     *              np.: read "string:==abc, integer:>=12, float:*" 1000
-     *      c. proces czyta po jednej linijcie i wykonuje sekwencyjnie te komendy jednocześnie wypisując co się dzieje żeby można było weryfikowac
-     *  3. przedmiot maksowany essa profit
-     */
-     /**
-      * Teraz można tworzyć krotki za pomocą stringa
-      * ALE UWAGA!!!
-      * jako pierwszy argument musi być dowolny boolean, bo jak go nie ma to mamy `unambigious declaration`
-      * czyli żeby zrobić krotkę (1, "nanana", 12.12) za pomocą stringa to musimy to zrobić tak:
-      * Tuple tuple = Tuple(false(!!!), "integer:1, string:nanana, float:12.12");
-      *
-      * jakie to ma konsekwencje? kompletnie żadne
-      * jedyne to musimy pamiętać podczas tworzenia CLI żeby wywoływać konstruktor z pierwszym booleanem
-      * */
-//    Tuple t1 = Tuple({1, 2, 3});
-//    linda_output(t1);
-//
-//    TuplePattern p1 = TuplePattern("integer:*, string:*, integer:*");
-//    time_t time1 = 1000;
-//    std::optional<Tuple> t2 = linda_input(p1, time1);
-//    if(t2){
-//        t2.value().print();
-//    }else{
-//        std::cout<<"timeout"<<std::endl;
-//    }
+void printCommandPrompt(){
+    std::cout << "Pass instruction:\n" ;
+}
 
+void printInstruction(){
+    std::cout<<
+    "Possible instructions:\n"
+    "read <tuplePattern> <timeoutInSeconds>\n"
+    "input <tuplePattern> <timeoutInSeconds>\n"
+    "output <tuple>\n\n"
+    "<tuplePattern> example: \"string:==abc;integer:>=15;float:*\"\n"
+    "<tuple> example: \"string:abc;integer:1000:float:-123.45\"\n"
+    "press <q> to quit program\n"
+    "==============================================================\n";
+}
+
+
+int main(int argc, char** argv){
+    if(argc==1){
+        userInput();
+    }else{
+        fileInput(argv[1]);
+    }
+}
+
+void lindaMultiplexer(std::string &line){
     std::stringstream ss;
+    std::vector<std::string> wordsInLine;
+    ss << line;
+    for(std::string s; ss >>s;){
+        wordsInLine.push_back(s);
+    }
+
+    std::string instructionStr = wordsInLine[0];
+    wordsInLine.erase(wordsInLine.begin()); //no longer needed
+
+    std::string lastElem = wordsInLine.back();//may be last element of tuple if output OR timeout if input/read
+    wordsInLine.pop_back();
+
+    std::string patternOrTupleStr;
+    for(const auto& str: wordsInLine){
+        patternOrTupleStr += str;
+    }
+
+    if(instructionStr == "output"){
+        std::string tupleStr = patternOrTupleStr + lastElem;
+        lindaOutput(tupleStr);
+    }else if(instructionStr == "read"){
+        lindaReadOrInput(patternOrTupleStr, lastElem, true);
+    }else if(instructionStr == "input"){
+        lindaReadOrInput(patternOrTupleStr, lastElem, false);
+    }else {
+        throw;
+    }
+}
+
+void lindaOutput(std::string &tupleStr) {
+    Tuple tuple = Tuple(true, tupleStr);
+    linda_output(tuple);
+    std::cout<<"User passed:";
+    tuple.print();
+}
+
+void lindaReadOrInput(std::string &tuplePatternStr, std::string &timeoutStr, bool isRead) {
+    time_t timeout = std::stoi(timeoutStr) * 1000;
+    TuplePattern pattern = TuplePattern(tuplePatternStr);
+    std::optional<Tuple> maybeTuple;
+    if(isRead){
+        maybeTuple = linda_read(pattern, timeout);
+    }else{
+        maybeTuple = linda_input(pattern, timeout);
+    }
+
+    if(maybeTuple){
+        std::cout<<"Otrzymano: \n";
+        maybeTuple->print();
+    }else{
+        std::cout<<"TIMEOUT!\n";
+    }
+}
+
+void fileInput(const std::string& fileName){
+    std::fstream file;
+    file.open(fileName, std::ios::in);
+    if(file.is_open()){
+        std::string line;
+        while(std::getline(file, line)){
+            lindaMultiplexer(line);
+        }
+    }else{
+        throw std::runtime_error("Unable to open file");
+    }
+    std::cout<<"End of work";
+}
+
+void userInput(){
     std::string line;
-    std::cout << "\nPlease input command:\nread <tuplePattern> <timeoutInMilisec>\n"
-                 "input <tuplePattern> <timeoutInMilisec>\n"
-                 "output <tuple>\n"
-                 "q (in order to quit)\n"
-                 "Please input tuple or tuplePattern as one string with ';' as separation, eg. 'string:==a;integer:>1'\n";
-    std::getline(std::cin, line);
-    std::vector<std::string> vecWord;
+    printInstruction();
 
     while(line != "q"){
-        ss << line;
-        for(std::string s; ss >>s;){
-            vecWord.push_back(s);
-        }
-
-
-        if(vecWord[0] == "read") {
-            lindaReadOrInput(ss, vecWord, true);
-
-        } else if(vecWord[0] == "input"){
-            lindaReadOrInput(ss, vecWord, false);
-
-        } else if(vecWord[0] == "output"){
-            lindaOutput(ss, vecWord);
-
-        } else{
-            std::cout << "Unrecognised command!\n";
-        }
-        ss.clear();
-        vecWord.clear();
-        std::cout << "\nPlease input command:\nread <tuplePattern> <timeoutInMilisec>\n"
-                     "input <tuplePattern> <timeoutInMilisec>\n"
-                     "output <tuple>\n"
-                     "q (in order to quit)\n"
-                     "Please input tuple or tuplePattern as one string with ';' as separation, eg. 'string:==a;integer:>1'\n";
+        printCommandPrompt();
         std::getline(std::cin, line);
-    }
-
-}
-
-void lindaOutput(std::stringstream &ss, std::vector<std::string> &vecWord) {
-
-    std::string tuple;
-    if(vecWord.size() > 1){
-        tuple = std::string (vecWord[1].begin(), vecWord[1].end());
-        auto it = tuple.begin();
-
-        while(it != tuple.end()){
-            if(*it == ';'){
-                *it = ',';
-                it++;
-            }
-            it++;
-        }
-    }else{
-        std::cout << "No tuple pattern!\n";
-        return;
-    }
-
-    for(int i=0; i<tuple.size() ;i++){
-        if(tuple[i] == ','){
-            i++;
-            tuple.insert(i, " ");
+        try {
+            lindaMultiplexer(line);
+        }catch(const std::exception& e){
+            std::cout << "Invalid instruction string!\n";
+            std::cout<< e.what()<<std::endl;
         }
     }
-
-    if(tuple.size() > MAX_SIZE_IN_BYTES){
-        std::cout<< "Tuple is too big!\n";
-        return;
-    }
-    Tuple* p = nullptr;
-    try{
-        p = new Tuple(false, tuple);
-
-    }catch (std::runtime_error e){
-        std::cout << e.what() << "\n";
-        return;
-    }
-
-    linda_output(*p);
-
-    std::cout << "User passed: ";
-    (*p).print();
-    std::cout << "\n";
-
-    delete(p);
-
-}
-
-void lindaReadOrInput(std::stringstream &ss, std::vector<std::string> &vecWord, bool isRead) {
-
-    std::string tupleTemplate= "";
-    if(vecWord.size() > 1){
-        tupleTemplate = std::string (vecWord[1].begin(), vecWord[1].end());
-        auto it = tupleTemplate.begin();
-        while(*it != '\000'){
-            if(*it == ';'){
-                *it = ',';
-                it++;
-            }
-            it++;
-        }
-    }else{
-        std::cout << "No tuple pattern!\n";
-        return;
-    }
-    long int timeout;
-
-    for(int i=0; i<tupleTemplate.size() ;i++){
-        if(tupleTemplate[i] == ','){
-            i++;
-            tupleTemplate.insert(i, " ");
-        }
-    }
-
-
-    if(vecWord.size() > 2){
-        timeout = atol(vecWord[2].c_str());
-    }else{
-        std::cout << "Needs timeout!\n";
-        return;
-    }
-
-    if(tupleTemplate.size() > MAX_SIZE_IN_BYTES){
-        std::cout<< "Tuple is too big!\n";
-        return;
-    }
-
-    TuplePattern *p = nullptr;
-    try{
-       p = new TuplePattern(tupleTemplate);
-
-    }catch(std::runtime_error e) {
-        std::cout << e.what() <<"\n";
-        return;
-    }
-    time_t time = timeout;
-    std::optional<Tuple> readTuple;
-    if(isRead){
-        readTuple = linda_read(*p,time);
-    }else{
-        readTuple = linda_input(*p,time);
-    }
-    if(readTuple.has_value()){
-        readTuple.value().print();
-    } else{
-        std::cout << time << "ms have passed!\n";
-    }
-
-    delete(p);
 }
