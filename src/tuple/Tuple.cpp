@@ -95,7 +95,7 @@ Tuple::Tuple(std::vector<variant> vector) {
 
 Tuple::Tuple(bool, std::string tupleString) {
     while (!tupleString.empty()) {
-        std::string tupleElementString = SerializationUtils::getNextElementAndErase(tupleString, ',');
+        std::string tupleElementString = SerializationUtils::getNextElementAndErase(tupleString, ';');
         while (tupleElementString[0] == ' ') {//get rid of spaces after coma
             tupleElementString.erase(0, 1);
         }

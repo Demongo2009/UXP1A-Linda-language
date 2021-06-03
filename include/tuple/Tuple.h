@@ -47,7 +47,7 @@ public:
     //for debug
     void print() {
         int noOfElements = elements.size();
-        std::cout << "Krotka " << noOfElements << "io elementowa:\n";
+        std::cout << "Tuple with " << noOfElements << "elements:\n";
         for (int i = 0; i < noOfElements; ++i) {
             std::cout << "\t" << i << ": ";
             elements[i].print();

@@ -30,6 +30,7 @@ void printInstruction(){
 
 
 int main(int argc, char** argv){
+    std::cout<<"a na polo?\n";
     if(argc==1){
         userInput();
     }else{
@@ -100,11 +101,12 @@ void fileInput(const std::string& fileName){
         std::string line;
         while(std::getline(file, line)){
             lindaMultiplexer(line);
+            std::cout<<"==============================================================\n";
         }
     }else{
         throw std::runtime_error("Unable to open file");
     }
-    std::cout<<"End of work";
+    std::cout<<"End of work\n";
 }
 
 void userInput(){
@@ -118,7 +120,7 @@ void userInput(){
             lindaMultiplexer(line);
         }catch(const std::exception& e){
             std::cout << "Invalid instruction string!\n";
-            std::cout<< e.what()<<std::endl;
+//            std::cout<< e.what()<<std::endl;
         }
     }
 }

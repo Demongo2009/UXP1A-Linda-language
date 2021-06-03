@@ -48,7 +48,7 @@ public:
 
     void print() const {
         int noOfElements = elementPatterns.size();
-        std::cout << "wzorzec " << noOfElements << " elementowy:\n";
+        std::cout << "Pattern with " << noOfElements << " elements:\n";
         for (int i = 0; i < noOfElements; ++i) {
             std::cout << "\t" << i << ": ";
             elementPatterns[i].print();
