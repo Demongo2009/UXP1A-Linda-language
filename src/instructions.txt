@@ -1,2 +1,0 @@
-output string:napis; integer:12; float:12.12
-input string:*; integer:==12; float:* 5

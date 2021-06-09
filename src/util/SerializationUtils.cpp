@@ -20,7 +20,7 @@ void SerializationUtils::printVariant(variant val){
     else if (valueType == FLOAT)
         std::cout << std::get<float>(val);
     else if (valueType == STRING)
-        std::cout << std::get<std::string>(val);
+        std::cout <<"\""<< std::get<std::string>(val)<<"\"";
     else{
         throw std::runtime_error("invalid variant in print");
     }

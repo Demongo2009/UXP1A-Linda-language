@@ -18,7 +18,9 @@ public:
         SerializationUtils::printType(valueType);
         std::cout << ":";
         SerializationUtils::printOperator(matchOperatorType);
-        SerializationUtils::printVariant(valueToCompare);
+        if(matchOperatorType != WHATEVER) {
+            SerializationUtils::printVariant(valueToCompare);
+        }
     }
 
 private:

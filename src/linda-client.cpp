@@ -30,7 +30,6 @@ void printInstruction(){
 
 
 int main(int argc, char** argv){
-    std::cout<<"a na polo?\n";
     if(argc==1){
         userInput();
     }else{
@@ -72,7 +71,7 @@ void lindaMultiplexer(std::string &line){
 void lindaOutput(std::string &tupleStr) {
     Tuple tuple = Tuple(true, tupleStr);
     linda_output(tuple);
-    std::cout<<"User passed:";
+    std::cout<<"User passed:\n";
     tuple.print();
 }
 
@@ -87,7 +86,7 @@ void lindaReadOrInput(std::string &tuplePatternStr, std::string &timeoutStr, boo
     }
 
     if(maybeTuple){
-        std::cout<<"Otrzymano: \n";
+        std::cout<<"Received from server: \n";
         maybeTuple->print();
     }else{
         std::cout<<"TIMEOUT!\n";
@@ -95,11 +94,17 @@ void lindaReadOrInput(std::string &tuplePatternStr, std::string &timeoutStr, boo
 }
 
 void fileInput(const std::string& fileName){
+    int i = 0;
     std::fstream file;
     file.open(fileName, std::ios::in);
     if(file.is_open()){
         std::string line;
         while(std::getline(file, line)){
+            if(line == ""){
+                continue;
+            }
+            ++i;
+            std::cout<<i<<": ";
             lindaMultiplexer(line);
             std::cout<<"==============================================================\n";
         }
@@ -122,5 +127,6 @@ void userInput(){
             std::cout << "Invalid instruction string!\n";
 //            std::cout<< e.what()<<std::endl;
         }
+        std::cout<<"==============================================================\n";
     }
 }

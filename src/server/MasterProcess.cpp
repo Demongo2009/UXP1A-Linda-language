@@ -3,11 +3,14 @@
 
 [[noreturn]] void MasterProcess::run() {
     init();
+    int i = 1;
     while (true) {
         try {
             acceptClient();
             receive();
+            std::cout<<i <<": ";
             processMessage();
+            ++i;
         }catch (std::exception& e){
             std::cout<<"Exception: "<<e.what()<<std::endl;
         }
@@ -84,7 +87,7 @@ void MasterProcess::processMessage() {
 void MasterProcess::processOutput() {
     printf("linda_output...\n");
     Tuple tuple = Tuple::deserialize(buffer);
-    //tuple.print();
+    tuple.print();
     if(waitingProcesses.empty()) {
         tuples.emplace_back(tuple);
     } else{
@@ -96,7 +99,7 @@ void MasterProcess::processOutput() {
 void MasterProcess::processRead() {
     printf("linda_read...\n");
     TuplePattern pattern = TuplePattern::deserialize(buffer);
-    //pattern.print();
+    pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.findMatching(tuples))){
         sendTuple(tuple.value());
@@ -108,7 +111,7 @@ void MasterProcess::processRead() {
 void MasterProcess::processInput() {
     printf("linda_input...\n");
     TuplePattern pattern = TuplePattern::deserialize(buffer);
-    //pattern.print();
+    pattern.print();
     std::optional<Tuple> tuple;
     if((tuple = pattern.deleteMatching(tuples))){
         if(!sendTuple(tuple.value()))
